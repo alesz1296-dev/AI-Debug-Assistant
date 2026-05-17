@@ -1,0 +1,21 @@
+[
+  {
+    "title": "Synthetic queue backlog after deploy",
+    "synthetic": true,
+    "severity": "high",
+    "symptoms": ["API latency increased", "Redis queue depth grew", "worker lag increased"],
+    "confirmed_cause": "bad worker concurrency setting combined with unbounded retries",
+    "remediation": ["restore worker concurrency", "cap retries", "add queue-depth alerts"],
+    "tags": ["queue", "redis", "worker", "deploy"]
+  },
+  {
+    "title": "Synthetic database connection exhaustion",
+    "synthetic": true,
+    "severity": "critical",
+    "symptoms": ["intermittent 500 errors", "connection pool timeout", "too many clients"],
+    "confirmed_cause": "missing pool limit in a new service path",
+    "remediation": ["set pool limits", "add transaction timeouts", "monitor active connections"],
+    "tags": ["postgres", "database", "pool", "timeout"]
+  }
+]
+
