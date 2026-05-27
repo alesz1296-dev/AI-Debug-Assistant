@@ -11,10 +11,16 @@
 
 ## Remaining Phase 2 Work
 
-- [ ] Define PostgreSQL tables for records, embeddings, retrieval traces, and evaluation runs.
+- [x] Define PostgreSQL tables for records, embeddings, and retrieval traces.
+- [x] Persist embeddings for seeded knowledge records.
+- [x] Persist retrieval traces and ranked hits.
+- [x] Add tests for embedding persistence and retrieval trace persistence.
+- [x] Introduce database retriever with pgvector-backed PostgreSQL search path.
+- [x] Add portable fallback tests for database retriever behavior.
+- [ ] Define PostgreSQL table for evaluation runs.
 - [ ] Add migration workflow.
 - [ ] Implement database-backed record ingestion.
-- [ ] Implement pgvector-backed similarity search.
+- [ ] Switch the live API query path to database-backed retrieval.
 - [ ] Preserve the current query API response shape.
 - [ ] Add tests for persistence and retrieval.
 - [ ] Update architecture docs with current and target storage behavior.

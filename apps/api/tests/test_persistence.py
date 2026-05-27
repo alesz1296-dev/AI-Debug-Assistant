@@ -1,6 +1,9 @@
 from app.db.init_db import initialize_database
 from app.models.records import KnowledgeRecord
+from app.repositories.embeddings import RecordEmbeddingRepository
 from app.repositories.records import KnowledgeRecordRepository
+from app.repositories.retrieval_traces import RetrievalTraceRepository
+from app.services.embeddings import LocalEmbeddingModel
 from app.services.seed_data import SEED_RECORDS
 from app.services.seed_records import seed_knowledge_records
 from sqlalchemy import create_engine
@@ -20,9 +23,11 @@ def test_seed_knowledge_records_is_idempotent() -> None:
     second_count = seed_knowledge_records(session)
 
     repository = KnowledgeRecordRepository(session)
+    embedding_repository = RecordEmbeddingRepository(session)
     assert first_count == len(SEED_RECORDS)
     assert second_count == len(SEED_RECORDS)
     assert repository.count() == len(SEED_RECORDS)
+    assert embedding_repository.count() == len(SEED_RECORDS)
 
 
 def test_record_persists_and_can_be_loaded_by_id() -> None:
@@ -61,3 +66,44 @@ def test_seed_records_can_be_listed_by_collection() -> None:
         "synthetic://incident/queue-backlog-after-deploy",
         "synthetic://incident/database-connection-exhaustion",
     }
+
+
+def test_seed_records_persist_embeddings() -> None:
+    session = _session()
+    seed_knowledge_records(session)
+    record_repository = KnowledgeRecordRepository(session)
+    embedding_repository = RecordEmbeddingRepository(session)
+    embedding_model = LocalEmbeddingModel()
+
+    records = record_repository.list_by_collection("knowledge_base")
+    vector = embedding_repository.get_vector(
+        records[0].id,
+        embedding_model.provider,
+        embedding_model.model,
+    )
+
+    assert vector is not None
+    assert len(vector) == embedding_model.dimensions
+
+
+def test_retrieval_trace_and_hits_are_persisted() -> None:
+    session = _session()
+    seed_knowledge_records(session)
+    record_repository = KnowledgeRecordRepository(session)
+    trace_repository = RetrievalTraceRepository(session)
+    embedding_model = LocalEmbeddingModel()
+
+    records = record_repository.list_by_collection("incident_cases")
+    trace_id = trace_repository.create_trace(
+        question="Why is the Redis queue growing?",
+        collections=["incident_cases"],
+        top_k=2,
+        embedding_provider=embedding_model.provider,
+        embedding_model=embedding_model.model,
+    )
+    trace_repository.add_hit(trace_id, records[0].id, rank=1, score=0.91)
+    trace_repository.add_hit(trace_id, records[1].id, rank=2, score=0.74)
+    session.commit()
+
+    assert trace_repository.count() == 1
+    assert trace_repository.hit_count(trace_id) == 2

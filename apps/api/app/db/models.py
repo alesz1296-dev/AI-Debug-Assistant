@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
-from sqlalchemy import DateTime, String, Text, UniqueConstraint
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import JSON
@@ -48,4 +48,78 @@ class KnowledgeRecordRow(Base):
         nullable=False,
         default=_now,
         onupdate=_now,
+    )
+
+
+class RecordEmbeddingRow(Base):
+    __tablename__ = "record_embeddings"
+    __table_args__ = (
+        UniqueConstraint("record_id", "provider", "model", name="uq_record_embedding_model"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    record_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("knowledge_records.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    provider: Mapped[str] = mapped_column(String(64), nullable=False)
+    model: Mapped[str] = mapped_column(String(128), nullable=False)
+    dimensions: Mapped[int] = mapped_column(Integer, nullable=False)
+    vector: Mapped[list[float]] = mapped_column(_json_type(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=_now,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=_now,
+        onupdate=_now,
+    )
+
+
+class RetrievalTraceRow(Base):
+    __tablename__ = "retrieval_traces"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    question: Mapped[str] = mapped_column(Text, nullable=False)
+    collections: Mapped[list[str]] = mapped_column(_json_type(), nullable=False)
+    top_k: Mapped[int] = mapped_column(Integer, nullable=False)
+    embedding_provider: Mapped[str] = mapped_column(String(64), nullable=False)
+    embedding_model: Mapped[str] = mapped_column(String(128), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=_now,
+    )
+
+
+class RetrievalTraceHitRow(Base):
+    __tablename__ = "retrieval_trace_hits"
+    __table_args__ = (
+        UniqueConstraint("trace_id", "rank", name="uq_retrieval_trace_hit_rank"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    trace_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("retrieval_traces.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    record_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("knowledge_records.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    rank: Mapped[int] = mapped_column(Integer, nullable=False)
+    score: Mapped[float] = mapped_column(Float, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=_now,
     )

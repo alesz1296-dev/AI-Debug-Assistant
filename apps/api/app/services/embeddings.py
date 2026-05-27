@@ -5,6 +5,9 @@ import math
 class LocalEmbeddingModel:
     """Deterministic hashing embeddings for local development and repeatable tests."""
 
+    provider = "local"
+    model = "local-hashing-v1"
+
     def __init__(self, dimensions: int = 128) -> None:
         self.dimensions = dimensions
 

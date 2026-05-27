@@ -6,6 +6,10 @@ Introduce a database-backed retrieval layer while keeping the existing API contr
 
 The first implementation chunk adds durable knowledge records and idempotent seed behavior without switching query retrieval away from the current in-memory retriever yet.
 
+The second implementation chunk persists deterministic embeddings and retrieval traces. It still stores vectors in a portable JSON column for testability; pgvector-backed similarity search remains the next chunk.
+
+The third implementation chunk introduces `DatabaseRetriever`. PostgreSQL uses the pgvector `<=>` distance operator for similarity search, while non-PostgreSQL tests use a deterministic portable cosine fallback.
+
 ## Interfaces
 
 - Retrieval records must keep collection, title, source, text, tags, metadata, and embedding data.

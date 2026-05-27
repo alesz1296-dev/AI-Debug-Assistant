@@ -34,13 +34,13 @@ class KnowledgeRecordRepository:
             row.tags = list(record.tags)
             row.record_metadata = record.metadata
         self.session.flush()
-        return _row_to_record(row)
+        return row_to_record(row)
 
     def get(self, record_id: UUID) -> KnowledgeRecord | None:
         row = self.session.get(KnowledgeRecordRow, str(record_id))
         if row is None:
             return None
-        return _row_to_record(row)
+        return row_to_record(row)
 
     def list_by_collection(self, collection: CollectionName) -> list[KnowledgeRecord]:
         rows = self.session.scalars(
@@ -48,13 +48,13 @@ class KnowledgeRecordRepository:
             .where(KnowledgeRecordRow.collection == collection)
             .order_by(KnowledgeRecordRow.created_at)
         ).all()
-        return [_row_to_record(row) for row in rows]
+        return [row_to_record(row) for row in rows]
 
     def count(self) -> int:
         return len(self.session.scalars(select(KnowledgeRecordRow.id)).all())
 
 
-def _row_to_record(row: KnowledgeRecordRow) -> KnowledgeRecord:
+def row_to_record(row: KnowledgeRecordRow) -> KnowledgeRecord:
     return KnowledgeRecord(
         id=UUID(row.id),
         collection=row.collection,  # type: ignore[arg-type]
