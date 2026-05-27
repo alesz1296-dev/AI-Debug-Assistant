@@ -1,5 +1,7 @@
 # Architecture
 
+## Current State
+
 ```mermaid
 flowchart LR
     Client["Client or Portfolio Demo"] --> API["FastAPI API"]
@@ -14,6 +16,28 @@ flowchart LR
     Store --> KB["knowledge_base"]
 ```
 
+The current implementation is a local-first MVP. It uses deterministic local embeddings and in-memory retrieval so API behavior, data policy, and tests can work before the platform has durable storage.
+
+## Target State
+
+```mermaid
+flowchart LR
+    Client["Client or Portfolio Demo"] --> API["FastAPI API"]
+    API --> Auth["API Key Guard"]
+    API --> Query["Query Service"]
+    API --> IngestAPI["Ingestion API"]
+    IngestAPI --> Queue["Redis / RQ Queue"]
+    Queue --> Worker["Ingestion Worker"]
+    Worker --> DB["PostgreSQL + pgvector"]
+    Query --> DB
+    Query --> Eval["Evaluation Harness"]
+    API --> Obs["Logs / Metrics / Traces"]
+    Worker --> Obs
+    Eval --> Obs
+```
+
+The target platform persists records and embeddings, uses pgvector retrieval, moves ingestion through workers, exposes observable runtime signals, and can later be deployed through CI/CD and AWS infrastructure.
+
 ## Retrieval Collections
 
 - `incident_cases`: synthetic incidents and public postmortem summaries.
@@ -22,5 +46,5 @@ flowchart LR
 
 ## Current Implementation
 
-The first implementation uses deterministic local embeddings and in-memory retrieval so the API and tests work immediately. The service boundary is intentionally small, making PostgreSQL + pgvector a later replacement rather than a rewrite.
+The service boundary is intentionally small, making PostgreSQL + pgvector a later replacement rather than a rewrite. The Docker, compose, and CI files are scaffold until Phase 6 validates them as accepted platform assets.
 

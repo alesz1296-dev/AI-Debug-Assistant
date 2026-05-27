@@ -12,6 +12,33 @@ This assistant investigates public or synthetic operational incidents by combini
 
 No company data belongs in this repository.
 
+## Readiness Status
+
+This repository currently contains a working local-first slice, not a deployment-ready or DevOps-ready system.
+
+Deployment and DevOps readiness are intentionally gated by `specs/001-enterprise-ai-debug-assistant/spec.md` and `specs/001-enterprise-ai-debug-assistant/tasks.md`.
+
+Until those gates are complete, the project should be treated as a validated prototype rather than a cloud-deployable service.
+
+## SSD Phase Roadmap
+
+The project is governed by the phase map in `specs/README.md`.
+
+Current planning milestone: Phase 1 - SSD Planning Hardening is complete.
+
+Next implementation phase: Phase 2 - PostgreSQL persistence and pgvector retrieval.
+
+- Phase 0: Local MVP baseline.
+- Phase 1: SSD planning hardening.
+- Phase 2: PostgreSQL persistence and pgvector retrieval.
+- Phase 3: Redis/RQ ingestion workers.
+- Phase 4: evaluation quality gates.
+- Phase 5: observability.
+- Phase 6: container and CI validation.
+- Phase 7: DevOps-ready milestone and manual-development handoff.
+- Phase 8: AWS, Kubernetes, Terraform, and cloud deployment.
+- Phase 9: optional dashboard.
+
 ## What It Demonstrates
 
 - FastAPI service design
@@ -22,6 +49,10 @@ No company data belongs in this repository.
 - production data-safety rules
 - observability and security scaffolding
 - private learning notes excluded from Git
+
+## Documentation Policy
+
+Public SSD docs are tracked in git. Private learning notes, coaching notes, scratch plans, and manual-development logs belong in ignored folders such as `.learning/`, `.planning/`, or `.private-notes/`.
 
 ## Quick Start
 

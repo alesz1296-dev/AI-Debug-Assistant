@@ -11,5 +11,9 @@ htmlcov/
 .env.*
 !.env.example
 .learning/
+.planning/
+.private-notes/
+logs.md
+*.local.md
 data/runtime/
 uploads/

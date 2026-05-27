@@ -6,6 +6,10 @@ from pydantic import BaseModel, Field
 CollectionName = Literal["incident_cases", "system_logs", "knowledge_base"]
 
 
+def default_collections() -> list[CollectionName]:
+    return ["incident_cases", "system_logs", "knowledge_base"]
+
+
 class Citation(BaseModel):
     collection: CollectionName
     source: str
@@ -54,9 +58,7 @@ class LogIngestRequest(BaseModel):
 
 class QueryRequest(BaseModel):
     question: str = Field(min_length=5, max_length=2000)
-    collections: list[CollectionName] = Field(
-        default_factory=lambda: ["incident_cases", "system_logs", "knowledge_base"]
-    )
+    collections: list[CollectionName] = Field(default_factory=default_collections)
     top_k: int = Field(default=5, ge=1, le=15)
 
 

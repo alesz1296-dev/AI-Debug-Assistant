@@ -1,7 +1,15 @@
+from typing import TypedDict
+
 from app.schemas.debug import EvaluationRunResponse, QueryRequest
 from app.services.rag import assistant
 
-GOLDEN_CASES = [
+
+class GoldenCase(TypedDict):
+    question: str
+    expected_terms: set[str]
+
+
+GOLDEN_CASES: list[GoldenCase] = [
     {
         "question": "API latency is high and Redis queue depth keeps growing after a deploy.",
         "expected_terms": {"queue", "worker", "redis"},
