@@ -24,9 +24,9 @@ Until those gates are complete, the project should be treated as a validated pro
 
 The project is governed by the phase map in `specs/README.md`.
 
-Current planning milestone: Phase 2 - PostgreSQL persistence and pgvector retrieval is complete.
+Current planning milestone: Phase 3 - Redis/RQ ingestion workers is complete.
 
-Next implementation phase: Phase 3 - Redis/RQ ingestion workers.
+Next implementation phase: Phase 4 - evaluation quality gates.
 
 - Phase 0: Local MVP baseline.
 - Phase 1: SSD planning hardening.
@@ -53,6 +53,10 @@ Next implementation phase: Phase 3 - Redis/RQ ingestion workers.
 ## Documentation Policy
 
 Public SSD docs are tracked in git. Private learning notes, coaching notes, scratch plans, and manual-development logs belong in ignored folders such as `.learning/`, `.planning/`, or `.private-notes/`.
+
+## Deferred Frameworks
+
+LangChain and LangGraph are intentionally not part of the current stack. They may be added later only if we have a concrete workflow that benefits from a higher-level orchestration or tool abstraction layer.
 
 ## Quick Start
 
@@ -93,6 +97,44 @@ alembic -c alembic.ini revision --autogenerate -m "describe change"
 ```
 
 The current migration path has been validated against the compose Postgres service using the API image and `alembic upgrade head`.
+
+## Local Ingestion Worker
+
+When Redis is running locally, the ingestion worker can be started with:
+
+```powershell
+python -m app.workers.ingestion
+```
+
+The API now enqueues document and log ingestion jobs instead of processing them inline. Debug-case creation also queues a background indexing job while keeping the immediate debug-case response shape.
+
+For a full local worker loop:
+
+1. Start the infrastructure services:
+
+   ```powershell
+   docker compose -f infra/docker-compose.yml up -d postgres redis
+   ```
+
+2. Start the API:
+
+   ```powershell
+   python -m uvicorn app.main:app --app-dir apps/api --reload
+   ```
+
+3. Start the worker in a second terminal:
+
+   ```powershell
+   python -m app.workers.ingestion
+   ```
+
+4. Enqueue a document or log via the API, then inspect the job:
+
+   ```text
+   GET /api/v1/ingestion-jobs/{job_id}
+   ```
+
+The job status endpoint reports queued, started, finished, failed, or not found, and exposes the failure type/message when a job crashes locally.
 
 ## Data Policy
 

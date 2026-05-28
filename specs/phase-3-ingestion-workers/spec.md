@@ -4,6 +4,10 @@
 
 Move ingestion work that can outgrow the request path into a Redis/RQ worker boundary.
 
+## Status
+
+Complete. The queue boundary, failure visibility, tests, and local run guidance are in place.
+
 ## Requirements
 
 - API endpoints enqueue ingestion work instead of doing all processing inline.

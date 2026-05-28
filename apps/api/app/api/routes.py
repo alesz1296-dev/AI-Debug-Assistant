@@ -3,7 +3,6 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends
 
 from app.core.security import require_api_key
-from app.models.records import KnowledgeRecord
 from app.schemas.debug import (
     DebugCase,
     DebugCaseCreate,
@@ -13,9 +12,21 @@ from app.schemas.debug import (
     QueryRequest,
     QueryResponse,
 )
+from app.schemas.ingestion import (
+    DebugCaseIngestionJob,
+    DocumentIngestionJob,
+    IngestionJobResponse,
+    IngestionJobStatusResponse,
+    LogIngestionJob,
+)
 from app.services.evaluation import run_evaluation
+from app.services.ingestion_jobs import (
+    get_ingestion_job_status,
+    queue_debug_case_ingestion,
+    queue_document_ingestion,
+    queue_log_ingestion,
+)
 from app.services.rag import assistant
-from app.services.retrieval import get_retriever
 
 router = APIRouter()
 
@@ -31,14 +42,15 @@ def health() -> dict[str, str]:
 def create_debug_case(payload: DebugCaseCreate) -> DebugCase:
     debug_case = DebugCase(id=uuid4(), **payload.model_dump())
     _debug_cases[str(debug_case.id)] = debug_case
-    get_retriever().add(
-        KnowledgeRecord(
-            collection="incident_cases",
+    queue_debug_case_ingestion(
+        DebugCaseIngestionJob(
+            record_id=debug_case.id,
             title=debug_case.title,
-            source=f"synthetic://debug-case/{debug_case.id}",
-            text=" ".join([debug_case.title, *debug_case.symptoms, *debug_case.logs]),
-            tags=tuple(["synthetic" if debug_case.synthetic else "public", *debug_case.tags]),
-            metadata={"environment": debug_case.environment},
+            symptoms=debug_case.symptoms,
+            environment=debug_case.environment,
+            logs=debug_case.logs,
+            tags=debug_case.tags,
+            synthetic=debug_case.synthetic,
         )
     )
     return debug_case
@@ -53,38 +65,52 @@ def get_debug_case(case_id: str) -> DebugCase:
     return _debug_cases[case_id]
 
 
-@router.post("/documents", dependencies=[Depends(require_api_key)])
-def ingest_document(payload: DocumentIngestRequest) -> dict[str, str]:
-    record = get_retriever().add(
-        KnowledgeRecord(
+@router.post(
+    "/documents",
+    response_model=IngestionJobResponse,
+    dependencies=[Depends(require_api_key)],
+)
+def ingest_document(payload: DocumentIngestRequest) -> IngestionJobResponse:
+    return queue_document_ingestion(
+        DocumentIngestionJob(
+            record_id=uuid4(),
             collection=payload.collection,
             title=payload.title,
             source=payload.source,
             text=payload.text,
-            tags=tuple(payload.tags),
-            metadata={"synthetic": payload.synthetic},
+            tags=payload.tags,
+            synthetic=payload.synthetic,
         )
     )
-    return {"id": str(record.id), "status": "indexed"}
 
 
-@router.post("/logs/ingest", dependencies=[Depends(require_api_key)])
-def ingest_log(payload: LogIngestRequest) -> dict[str, str]:
-    record = get_retriever().add(
-        KnowledgeRecord(
-            collection="system_logs",
-            title=f"{payload.service} {payload.severity} log",
-            source=f"log://{payload.source_dataset}/{payload.service}",
-            text=payload.raw_message,
-            tags=tuple(["log", payload.service.lower(), payload.severity.lower(), *payload.tags]),
-            metadata={
-                "timestamp": payload.timestamp,
-                "anomaly_label": payload.anomaly_label,
-                "source_dataset": payload.source_dataset,
-            },
+@router.post(
+    "/logs/ingest",
+    response_model=IngestionJobResponse,
+    dependencies=[Depends(require_api_key)],
+)
+def ingest_log(payload: LogIngestRequest) -> IngestionJobResponse:
+    return queue_log_ingestion(
+        LogIngestionJob(
+            record_id=uuid4(),
+            service=payload.service,
+            raw_message=payload.raw_message,
+            severity=payload.severity,
+            timestamp=payload.timestamp,
+            anomaly_label=payload.anomaly_label,
+            source_dataset=payload.source_dataset,
+            tags=payload.tags,
         )
     )
-    return {"id": str(record.id), "status": "indexed"}
+
+
+@router.get(
+    "/ingestion-jobs/{job_id}",
+    response_model=IngestionJobStatusResponse,
+    dependencies=[Depends(require_api_key)],
+)
+def get_ingestion_job(job_id: str) -> IngestionJobStatusResponse:
+    return get_ingestion_job_status(job_id)
 
 
 @router.post("/query", response_model=QueryResponse)

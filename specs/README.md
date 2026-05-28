@@ -10,9 +10,9 @@ The project must not claim deployment readiness, DevOps readiness, or cloud read
 
 ## Current Milestone
 
-Phase 2 - persistent storage and pgvector retrieval is complete.
+Phase 3 - Redis/RQ ingestion workers is complete.
 
-Next implementation phase: Phase 3 - asynchronous ingestion workers.
+Next implementation phase: Phase 4 - evaluation quality gates.
 
 ## End Goal
 
@@ -38,3 +38,7 @@ Complete phases in order unless a later phase needs a small planning clarificati
 ## Development Mode Transition
 
 Phase 7 is the handoff milestone. After Phase 7, development shifts toward more manual implementation by the project owner, with Codex acting as an architectural guide, reviewer, debugging partner, and implementation coach. Private guidance notes belong in ignored folders such as `.learning/` or `.planning/`.
+
+## Deferred Frameworks
+
+LangChain and LangGraph stay out of the base stack for now. Treat them as optional future additions only if a later phase needs a clearer abstraction for provider wiring, retrieval tooling, or multi-step stateful orchestration.

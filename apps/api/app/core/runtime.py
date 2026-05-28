@@ -21,7 +21,7 @@ class AppRuntime:
     backend_name: str
 
 
-def build_runtime(database_url: str | None = None) -> AppRuntime:
+def build_runtime(database_url: str | None = None, seed: bool = True) -> AppRuntime:
     url = database_url or settings.database_url
     engine = _build_engine(url)
     session = sessionmaker(bind=engine, autoflush=False, autocommit=False, expire_on_commit=False)()
@@ -29,7 +29,8 @@ def build_runtime(database_url: str | None = None) -> AppRuntime:
         apply_migrations(url)
     else:
         initialize_database(engine)
-    seed_knowledge_records(session)
+    if seed:
+        seed_knowledge_records(session)
     return AppRuntime(
         engine=engine,
         session=session,
