@@ -123,3 +123,19 @@ class RetrievalTraceHitRow(Base):
         nullable=False,
         default=_now,
     )
+
+
+class EvaluationRunRow(Base):
+    __tablename__ = "evaluation_runs"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    suite_name: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
+    cases_evaluated: Mapped[int] = mapped_column(Integer, nullable=False)
+    mean_retrieval_score: Mapped[float] = mapped_column(Float, nullable=False)
+    groundedness_pass_rate: Mapped[float] = mapped_column(Float, nullable=False)
+    failures: Mapped[list[str]] = mapped_column(_json_type(), nullable=False, default=list)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=_now,
+    )

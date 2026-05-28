@@ -213,5 +213,14 @@ def _snippet(text: str, max_chars: int = 240) -> str:
     return f"{clean[: max_chars - 3]}..."
 
 
-retriever = InMemoryRetriever()
+_ACTIVE_RETRIEVER: InMemoryRetriever | DatabaseRetriever = InMemoryRetriever()
+
+
+def get_retriever() -> InMemoryRetriever | DatabaseRetriever:
+    return _ACTIVE_RETRIEVER
+
+
+def set_retriever(new_retriever: InMemoryRetriever | DatabaseRetriever) -> None:
+    global _ACTIVE_RETRIEVER
+    _ACTIVE_RETRIEVER = new_retriever
 

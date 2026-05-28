@@ -1,5 +1,9 @@
 # Phase 2 Spec: Persistence + pgvector
 
+## Status
+
+Complete. The phase has been implemented and validated against the compose Postgres service.
+
 ## Goal
 
 Replace in-memory-only state with durable PostgreSQL persistence and vector-backed retrieval.

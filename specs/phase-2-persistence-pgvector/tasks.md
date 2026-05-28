@@ -1,5 +1,9 @@
 # Phase 2 Tasks: Persistence + pgvector
 
+## Status
+
+Complete. All listed implementation tasks are checked off, and the Alembic migration has been applied against the compose Postgres service.
+
 ## Chunk 1: Durable Records And Seeding
 
 - [x] Add database package with SQLAlchemy base, session, models, and initialization helper.
@@ -17,10 +21,10 @@
 - [x] Add tests for embedding persistence and retrieval trace persistence.
 - [x] Introduce database retriever with pgvector-backed PostgreSQL search path.
 - [x] Add portable fallback tests for database retriever behavior.
-- [ ] Define PostgreSQL table for evaluation runs.
-- [ ] Add migration workflow.
-- [ ] Implement database-backed record ingestion.
-- [ ] Switch the live API query path to database-backed retrieval.
-- [ ] Preserve the current query API response shape.
-- [ ] Add tests for persistence and retrieval.
-- [ ] Update architecture docs with current and target storage behavior.
+- [x] Implement database-backed record ingestion.
+- [x] Switch the live API query path to database-backed retrieval.
+- [x] Preserve the current query API response shape.
+- [x] Add tests for persistence and retrieval.
+- [x] Update architecture docs with current and target storage behavior.
+- [x] Define PostgreSQL table for evaluation runs.
+- [x] Add migration workflow.

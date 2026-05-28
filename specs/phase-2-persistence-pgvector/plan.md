@@ -1,5 +1,9 @@
 # Phase 2 Plan: Persistence + pgvector
 
+## Status
+
+Complete. The durable-records chunk, embedding persistence chunk, pgvector-backed search chunk, and Alembic migration workflow have all been implemented and exercised.
+
 ## Approach
 
 Introduce a database-backed retrieval layer while keeping the existing API contracts stable. Use PostgreSQL and pgvector locally through the existing compose scaffold before any cloud work.
@@ -9,6 +13,8 @@ The first implementation chunk adds durable knowledge records and idempotent see
 The second implementation chunk persists deterministic embeddings and retrieval traces. It still stores vectors in a portable JSON column for testability; pgvector-backed similarity search remains the next chunk.
 
 The third implementation chunk introduces `DatabaseRetriever`. PostgreSQL uses the pgvector `<=>` distance operator for similarity search, while non-PostgreSQL tests use a deterministic portable cosine fallback.
+
+The migration workflow is now part of the actual runtime path: Postgres startup applies Alembic migrations, while SQLite keeps the `create_all()` fallback for local testability and lightweight development.
 
 ## Interfaces
 

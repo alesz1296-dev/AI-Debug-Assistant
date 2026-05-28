@@ -21,6 +21,10 @@ def test_query_returns_grounded_shape() -> None:
     assert body["citations"]
     assert "retrieval_trace_id" in body
     assert "next_steps" in body
+    assert any(
+        citation["title"] == "Synthetic queue backlog after deploy"
+        for citation in body["citations"]
+    )
 
 
 def test_protected_endpoint_requires_api_key() -> None:

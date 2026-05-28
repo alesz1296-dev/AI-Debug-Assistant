@@ -1,7 +1,9 @@
 from typing import TypedDict
 
+from app.repositories.evaluations import EvaluationRunRepository
 from app.schemas.debug import EvaluationRunResponse, QueryRequest
 from app.services.rag import assistant
+from app.services.retrieval import DatabaseRetriever, get_retriever
 
 
 class GoldenCase(TypedDict):
@@ -36,10 +38,21 @@ def run_evaluation() -> EvaluationRunResponse:
         if score < 0.34:
             failures.append(f"Low retrieval match for: {case['question']}")
 
-    return EvaluationRunResponse(
+    evaluation_response = EvaluationRunResponse(
         cases_evaluated=len(GOLDEN_CASES),
         mean_retrieval_score=round(sum(scores) / len(scores), 2),
         groundedness_pass_rate=round(grounded_passes / len(GOLDEN_CASES), 2),
         failures=failures,
     )
+    retriever = get_retriever()
+    if isinstance(retriever, DatabaseRetriever):
+        EvaluationRunRepository(retriever.session).add(
+            suite_name="golden_local_v1",
+            cases_evaluated=evaluation_response.cases_evaluated,
+            mean_retrieval_score=evaluation_response.mean_retrieval_score,
+            groundedness_pass_rate=evaluation_response.groundedness_pass_rate,
+            failures=evaluation_response.failures,
+        )
+        retriever.session.commit()
+    return evaluation_response
 

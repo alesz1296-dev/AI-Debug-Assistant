@@ -1,7 +1,7 @@
 import time
 
 from app.schemas.debug import QueryRequest, QueryResponse
-from app.services.retrieval import retriever
+from app.services.retrieval import get_retriever
 
 
 class GroundedDebugAssistant:
@@ -9,6 +9,7 @@ class GroundedDebugAssistant:
 
     def answer(self, request: QueryRequest) -> QueryResponse:
         started = time.perf_counter()
+        retriever = get_retriever()
         trace = retriever.search(request.question, request.collections, request.top_k)
         citations = retriever.citations_for(trace.hits)
         top_titles = [hit.record.title for hit in trace.hits[:3]]

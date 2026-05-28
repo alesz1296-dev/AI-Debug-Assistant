@@ -1,9 +1,12 @@
 from app.db.init_db import initialize_database
 from app.models.records import KnowledgeRecord
 from app.repositories.embeddings import RecordEmbeddingRepository
+from app.repositories.evaluations import EvaluationRunRepository
 from app.repositories.records import KnowledgeRecordRepository
 from app.repositories.retrieval_traces import RetrievalTraceRepository
 from app.services.embeddings import LocalEmbeddingModel
+from app.services.evaluation import run_evaluation
+from app.services.retrieval import DatabaseRetriever, get_retriever, set_retriever
 from app.services.seed_data import SEED_RECORDS
 from app.services.seed_records import seed_knowledge_records
 from sqlalchemy import create_engine
@@ -107,3 +110,20 @@ def test_retrieval_trace_and_hits_are_persisted() -> None:
 
     assert trace_repository.count() == 1
     assert trace_repository.hit_count(trace_id) == 2
+
+
+def test_evaluation_runs_are_persisted() -> None:
+    session = _session()
+    seed_knowledge_records(session)
+    original = get_retriever()
+    set_retriever(DatabaseRetriever(session))
+    try:
+        response = run_evaluation()
+    finally:
+        set_retriever(original)
+
+    repository = EvaluationRunRepository(session)
+
+    assert response.cases_evaluated == 2
+    assert response.groundedness_pass_rate > 0
+    assert repository.count() == 1

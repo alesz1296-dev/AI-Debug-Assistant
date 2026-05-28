@@ -15,7 +15,7 @@ from app.schemas.debug import (
 )
 from app.services.evaluation import run_evaluation
 from app.services.rag import assistant
-from app.services.retrieval import retriever
+from app.services.retrieval import get_retriever
 
 router = APIRouter()
 
@@ -31,7 +31,7 @@ def health() -> dict[str, str]:
 def create_debug_case(payload: DebugCaseCreate) -> DebugCase:
     debug_case = DebugCase(id=uuid4(), **payload.model_dump())
     _debug_cases[str(debug_case.id)] = debug_case
-    retriever.add(
+    get_retriever().add(
         KnowledgeRecord(
             collection="incident_cases",
             title=debug_case.title,
@@ -55,7 +55,7 @@ def get_debug_case(case_id: str) -> DebugCase:
 
 @router.post("/documents", dependencies=[Depends(require_api_key)])
 def ingest_document(payload: DocumentIngestRequest) -> dict[str, str]:
-    record = retriever.add(
+    record = get_retriever().add(
         KnowledgeRecord(
             collection=payload.collection,
             title=payload.title,
@@ -70,7 +70,7 @@ def ingest_document(payload: DocumentIngestRequest) -> dict[str, str]:
 
 @router.post("/logs/ingest", dependencies=[Depends(require_api_key)])
 def ingest_log(payload: LogIngestRequest) -> dict[str, str]:
-    record = retriever.add(
+    record = get_retriever().add(
         KnowledgeRecord(
             collection="system_logs",
             title=f"{payload.service} {payload.severity} log",

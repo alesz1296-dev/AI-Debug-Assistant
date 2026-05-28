@@ -8,6 +8,12 @@ The project must not claim deployment readiness, DevOps readiness, or cloud read
 - `plan.md`: implementation approach, architectural decisions, data flow, and risk notes.
 - `tasks.md`: restrictive, verifiable work items.
 
+## Current Milestone
+
+Phase 2 - persistent storage and pgvector retrieval is complete.
+
+Next implementation phase: Phase 3 - asynchronous ingestion workers.
+
 ## End Goal
 
 Build a deployable, observable AI debugging assistant that ingests public/synthetic operational evidence, stores and retrieves it with PostgreSQL and pgvector, processes ingestion through workers, evaluates grounded triage quality, and can later be ported to AWS as a CI/CD and DevOps portfolio showcase.

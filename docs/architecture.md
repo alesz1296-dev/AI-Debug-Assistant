@@ -6,9 +6,9 @@
 flowchart LR
     Client["Client or Portfolio Demo"] --> API["FastAPI API"]
     API --> Auth["API Key Guard"]
-    API --> Ingest["Ingestion Service"]
+    API --> Ingest["Ingestion + Retrieval Service"]
     API --> RAG["Grounded Debug Assistant"]
-    Ingest --> Store["Retrieval Store"]
+    Ingest --> Store["PostgreSQL / SQLite runtime store"]
     RAG --> Store
     RAG --> Eval["Evaluation Harness"]
     Store --> Cases["incident_cases"]
@@ -16,7 +16,7 @@ flowchart LR
     Store --> KB["knowledge_base"]
 ```
 
-The current implementation is a local-first MVP. It uses deterministic local embeddings and in-memory retrieval so API behavior, data policy, and tests can work before the platform has durable storage.
+The current implementation boots a runtime database-backed retriever on application startup. For PostgreSQL, startup applies Alembic migrations before seeding and serving requests. For SQLite, startup uses the `create_all()` fallback for lightweight local development and tests. In both cases, it persists knowledge records, deterministic embeddings, retrieval traces, and evaluation runs.
 
 ## Target State
 
@@ -46,5 +46,5 @@ The target platform persists records and embeddings, uses pgvector retrieval, mo
 
 ## Current Implementation
 
-The service boundary is intentionally small, making PostgreSQL + pgvector a later replacement rather than a rewrite. The Docker, compose, and CI files are scaffold until Phase 6 validates them as accepted platform assets.
+The service boundary is intentionally small, but the live app now uses the database-backed retriever behind the same API response shape. The Docker, compose, and CI files are still scaffold until Phase 6 validates them as accepted platform assets.
 

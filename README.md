@@ -24,9 +24,9 @@ Until those gates are complete, the project should be treated as a validated pro
 
 The project is governed by the phase map in `specs/README.md`.
 
-Current planning milestone: Phase 1 - SSD Planning Hardening is complete.
+Current planning milestone: Phase 2 - PostgreSQL persistence and pgvector retrieval is complete.
 
-Next implementation phase: Phase 2 - PostgreSQL persistence and pgvector retrieval.
+Next implementation phase: Phase 3 - Redis/RQ ingestion workers.
 
 - Phase 0: Local MVP baseline.
 - Phase 1: SSD planning hardening.
@@ -82,6 +82,17 @@ X-API-Key: dev-local-key
   "top_k": 5
 }
 ```
+
+## Migration Workflow
+
+Use Alembic for schema changes:
+
+```bash
+alembic -c alembic.ini upgrade head
+alembic -c alembic.ini revision --autogenerate -m "describe change"
+```
+
+The current migration path has been validated against the compose Postgres service using the API image and `alembic upgrade head`.
 
 ## Data Policy
 
