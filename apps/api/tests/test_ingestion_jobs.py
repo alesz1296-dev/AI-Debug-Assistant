@@ -5,6 +5,7 @@ from uuid import uuid4
 import pytest
 from app.api import routes as api_routes
 from app.core.config import settings
+from app.core.metrics import metrics_registry
 from app.db.base import Base
 from app.db.models import KnowledgeRecordRow, RecordEmbeddingRow
 from app.main import app
@@ -37,8 +38,10 @@ from sqlalchemy.orm import Session, sessionmaker
 def enable_sqlite_fallback() -> Generator[None, None, None]:
     original = settings.allow_sqlite_fallback
     settings.allow_sqlite_fallback = True
+    metrics_registry.reset()
     yield
     settings.allow_sqlite_fallback = original
+    metrics_registry.reset()
 
 
 @pytest.fixture(autouse=True)
@@ -239,6 +242,9 @@ def test_documents_route_enqueues_work(monkeypatch: pytest.MonkeyPatch) -> None:
 
     assert response.status_code == 200
     assert response.json() == response_payload.model_dump(mode="json")
+    assert 'enterprise_ai_ingestion_enqueue_success_total{kind="document"} 1' in (
+        metrics_registry.render_prometheus()
+    )
 
 
 def test_ingestion_job_status_reports_failure(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -285,6 +291,10 @@ def test_queue_document_ingestion_raises_when_redis_is_unavailable(
 
     with pytest.raises(IngestionQueueUnavailableError):
         queue_document_ingestion(payload)
+    assert (
+        'enterprise_ai_ingestion_queue_unavailable_total'
+        '{operation="enqueue",kind="document"} 1'
+    ) in metrics_registry.render_prometheus()
 
 
 def test_documents_route_returns_503_when_queue_is_unavailable(

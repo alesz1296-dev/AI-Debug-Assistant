@@ -9,6 +9,8 @@ from rq.exceptions import NoSuchJobError
 from rq.job import Job
 
 from app.core.config import settings
+from app.core.logging import get_logger
+from app.core.metrics import metrics_registry
 from app.core.runtime import AppRuntime, build_runtime
 from app.models.records import KnowledgeRecord
 from app.schemas.ingestion import (
@@ -52,6 +54,12 @@ def get_ingestion_job_status(job_id: str) -> IngestionJobStatusResponse:
         connection = getattr(queue, "connection", None) or Redis.from_url(settings.redis_url)
         job = Job.fetch(job_id, connection=connection)
     except RedisError as exc:
+        metrics_registry.record_ingestion_queue_unavailable(
+            operation="job_status", kind="unknown"
+        )
+        get_logger(__name__, component="ingestion_jobs").warning(
+            "ingestion.queue_unavailable", operation="job_status", job_id=job_id
+        )
         raise IngestionQueueUnavailableError(
             "The ingestion queue is currently unavailable."
         ) from exc
@@ -152,6 +160,13 @@ def _queue_job(
             job_id=str(record_id),
         )
     except RedisError as exc:
+        metrics_registry.record_ingestion_queue_unavailable(operation="enqueue", kind=kind)
+        get_logger(__name__, component="ingestion_jobs").warning(
+            "ingestion.queue_unavailable",
+            operation="enqueue",
+            kind=kind,
+            record_id=str(record_id),
+        )
         raise IngestionQueueUnavailableError(
             "The ingestion queue is currently unavailable."
         ) from exc

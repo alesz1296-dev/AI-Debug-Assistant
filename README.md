@@ -24,9 +24,9 @@ Until those gates are complete, the project should be treated as a validated pro
 
 The project is governed by the phase map in `specs/README.md`.
 
-Current planning milestone: Phase 4 - evaluation quality gates is complete.
+Current planning milestone: Phase 5 - observability is complete.
 
-Next implementation phase: Phase 5 - observability.
+Next implementation phase: Phase 6 - container and CI validation.
 
 - Phase 0: Local MVP baseline.
 - Phase 1: SSD planning hardening.
@@ -69,9 +69,15 @@ python -m venv .venv
 Then open:
 
 - `GET http://127.0.0.1:8000/api/v1/health`
+- `GET http://127.0.0.1:8000/api/v1/ready`
+- `GET http://127.0.0.1:8000/api/v1/metrics`
 - `POST http://127.0.0.1:8000/api/v1/query`
 
-The health response now reports the active backend as `postgresql`, `sqlite`, or `sqlite_fallback`.
+The health response stays lightweight and reports the active backend as `postgresql`, `sqlite`, or `sqlite_fallback`.
+The readiness response reports `ok` or `degraded` based on runtime initialization, database reachability, and Redis queue availability.
+
+Structured JSON logs are enabled through `structlog`. Use `LOG_LEVEL=INFO` by default, or set a different level in `.env` for local debugging.
+The metrics endpoint exposes a Prometheus-style text surface for local request, query, ingestion, and evaluation signals.
 
 For local protected routes, use:
 
@@ -143,6 +149,14 @@ For a full local worker loop:
 The job status endpoint reports queued, started, finished, failed, or not found, and exposes the failure type/message when a job crashes locally.
 
 If Redis is unavailable, ingestion endpoints and job-status lookup now return `503` with a structured `queue_unavailable` error instead of a raw server exception.
+
+## Local Observability Proof
+
+1. Start the API and worker with the local infrastructure services running.
+2. Call `/api/v1/health`, `/api/v1/ready`, and `/api/v1/query`.
+3. Run `/api/v1/evaluations/run` with the API key.
+4. Open `/api/v1/metrics` and confirm request, query, ingestion, and evaluation counters are present.
+5. Review the JSON logs for `runtime.started`, `http.request.completed`, `query.completed`, `evaluation.completed`, and `readiness.checked`.
 
 ## Data Policy
 

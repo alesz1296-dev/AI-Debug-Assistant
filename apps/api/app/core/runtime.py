@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.core.config import settings
+from app.core.logging import get_logger
 from app.db.bootstrap import apply_migrations
 from app.db.init_db import initialize_database
 from app.services.retrieval import DatabaseRetriever, InMemoryRetriever
@@ -50,6 +51,11 @@ def _build_engine(database_url: str) -> tuple[Engine, bool]:
             raise
         if not settings.allow_sqlite_fallback:
             raise
+        get_logger(__name__, component="runtime").warning(
+            "runtime.sqlite_fallback_used",
+            configured_backend="postgresql",
+            fallback_backend="sqlite",
+        )
         return (
             create_engine(
                 "sqlite://",

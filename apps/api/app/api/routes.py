@@ -1,7 +1,15 @@
+from typing import Any
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi.responses import JSONResponse
+from redis import Redis
+from redis.exceptions import RedisError
+from sqlalchemy import text
 
+from app.core.config import settings
+from app.core.logging import get_logger
+from app.core.metrics import metrics_registry
 from app.core.security import require_api_key
 from app.models.records import KnowledgeRecord
 from app.repositories.records import KnowledgeRecordRepository
@@ -44,6 +52,46 @@ def health(request: Request) -> dict[str, str]:
     }
 
 
+@router.get("/metrics")
+def metrics() -> Response:
+    return Response(
+        content=metrics_registry.render_prometheus(),
+        media_type="text/plain; version=0.0.4; charset=utf-8",
+    )
+
+
+@router.get("/ready")
+def ready(request: Request) -> JSONResponse:
+    runtime_ready = _runtime_ready(request)
+    database_ready = _database_ready(request) if runtime_ready else False
+    queue_ready = _queue_ready()
+    backend_name = getattr(getattr(request.app.state, "runtime", None), "backend_name", "unknown")
+    status_code = (
+        status.HTTP_200_OK
+        if runtime_ready and database_ready and queue_ready
+        else status.HTTP_503_SERVICE_UNAVAILABLE
+    )
+    payload: dict[str, Any] = {
+        "status": "ok" if status_code == status.HTTP_200_OK else "degraded",
+        "service": "enterprise-ai-debug-assistant",
+        "backend": backend_name,
+        "dependencies": {
+            "runtime": "ok" if runtime_ready else "unavailable",
+            "database": "ok" if database_ready else "unavailable",
+            "redis_queue": "ok" if queue_ready else "unavailable",
+        },
+    }
+    get_logger(__name__, component="api.routes").info(
+        "readiness.checked",
+        status=payload["status"],
+        backend=backend_name,
+        runtime_ready=runtime_ready,
+        database_ready=database_ready,
+        queue_ready=queue_ready,
+    )
+    return JSONResponse(status_code=status_code, content=payload)
+
+
 @router.post("/debug-cases", response_model=DebugCase, dependencies=[Depends(require_api_key)])
 def create_debug_case(request: Request, payload: DebugCaseCreate) -> DebugCase:
     debug_case = DebugCase(id=uuid4(), **payload.model_dump())
@@ -51,7 +99,7 @@ def create_debug_case(request: Request, payload: DebugCaseCreate) -> DebugCase:
     repository.upsert_by_source(_debug_case_record(debug_case))
     request.app.state.runtime.session.commit()
     try:
-        queue_debug_case_ingestion(
+        job = queue_debug_case_ingestion(
             DebugCaseIngestionJob(
                 record_id=debug_case.id,
                 title=debug_case.title,
@@ -64,6 +112,13 @@ def create_debug_case(request: Request, payload: DebugCaseCreate) -> DebugCase:
         )
     except IngestionQueueUnavailableError as exc:
         raise _queue_unavailable_http_error() from exc
+    get_logger(__name__, component="api.routes").info(
+        "ingestion.queued",
+        kind=job.kind,
+        job_id=job.job_id,
+        record_id=str(job.id),
+    )
+    metrics_registry.record_ingestion_enqueue_success(job.kind)
     return debug_case
 
 
@@ -90,7 +145,7 @@ def get_debug_case(request: Request, case_id: UUID) -> DebugCase:
 )
 def ingest_document(payload: DocumentIngestRequest) -> IngestionJobResponse:
     try:
-        return queue_document_ingestion(
+        response = queue_document_ingestion(
             DocumentIngestionJob(
                 record_id=uuid4(),
                 collection=payload.collection,
@@ -103,6 +158,14 @@ def ingest_document(payload: DocumentIngestRequest) -> IngestionJobResponse:
         )
     except IngestionQueueUnavailableError as exc:
         raise _queue_unavailable_http_error() from exc
+    get_logger(__name__, component="api.routes").info(
+        "ingestion.queued",
+        kind=response.kind,
+        job_id=response.job_id,
+        record_id=str(response.id),
+    )
+    metrics_registry.record_ingestion_enqueue_success(response.kind)
+    return response
 
 
 @router.post(
@@ -112,7 +175,7 @@ def ingest_document(payload: DocumentIngestRequest) -> IngestionJobResponse:
 )
 def ingest_log(payload: LogIngestRequest) -> IngestionJobResponse:
     try:
-        return queue_log_ingestion(
+        response = queue_log_ingestion(
             LogIngestionJob(
                 record_id=uuid4(),
                 service=payload.service,
@@ -126,6 +189,14 @@ def ingest_log(payload: LogIngestRequest) -> IngestionJobResponse:
         )
     except IngestionQueueUnavailableError as exc:
         raise _queue_unavailable_http_error() from exc
+    get_logger(__name__, component="api.routes").info(
+        "ingestion.queued",
+        kind=response.kind,
+        job_id=response.job_id,
+        record_id=str(response.id),
+    )
+    metrics_registry.record_ingestion_enqueue_success(response.kind)
+    return response
 
 
 @router.get(
@@ -142,7 +213,23 @@ def get_ingestion_job(job_id: str) -> IngestionJobStatusResponse:
 
 @router.post("/query", response_model=QueryResponse)
 def query(payload: QueryRequest) -> QueryResponse:
-    return assistant.answer(payload)
+    response = assistant.answer(payload)
+    metrics_registry.record_query(
+        latency_ms=response.latency_ms,
+        citations_count=len(response.citations),
+        confidence=response.confidence,
+    )
+    get_logger(__name__, component="api.routes").info(
+        "query.completed",
+        top_k=payload.top_k,
+        collections=payload.collections,
+        citations_count=len(response.citations),
+        warnings_count=len(response.warnings),
+        confidence=response.confidence,
+        latency_ms=response.latency_ms,
+        retrieval_trace_id=str(response.retrieval_trace_id),
+    )
+    return response
 
 
 @router.post(
@@ -151,7 +238,23 @@ def query(payload: QueryRequest) -> QueryResponse:
     dependencies=[Depends(require_api_key)],
 )
 def evaluation_run() -> EvaluationRunResponse:
-    return run_evaluation()
+    response = run_evaluation()
+    metrics_registry.record_evaluation(
+        passed=response.passed,
+        weak_evidence_warning_rate=response.weak_evidence_warning_rate,
+        no_evidence_warning_rate=response.no_evidence_warning_rate,
+    )
+    get_logger(__name__, component="api.routes").info(
+        "evaluation.completed",
+        passed=response.passed,
+        cases_evaluated=response.cases_evaluated,
+        failures_count=len(response.failures),
+        mean_retrieval_score=response.mean_retrieval_score,
+        groundedness_pass_rate=response.groundedness_pass_rate,
+        citation_presence_rate=response.citation_presence_rate,
+        mean_latency_ms=response.mean_latency_ms,
+    )
+    return response
 
 
 def _debug_case_record(debug_case: DebugCase) -> KnowledgeRecord:
@@ -196,6 +299,7 @@ def _debug_case_source(case_id: UUID) -> str:
 
 
 def _queue_unavailable_http_error() -> HTTPException:
+    get_logger(__name__, component="api.routes").warning("ingestion.queue_unavailable")
     return HTTPException(
         status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
         detail={
@@ -203,3 +307,25 @@ def _queue_unavailable_http_error() -> HTTPException:
             "message": "The ingestion queue is currently unavailable.",
         },
     )
+
+
+def _runtime_ready(request: Request) -> bool:
+    return hasattr(request.app.state, "runtime")
+
+
+def _database_ready(request: Request) -> bool:
+    runtime = getattr(request.app.state, "runtime", None)
+    if runtime is None:
+        return False
+    try:
+        runtime.session.execute(text("SELECT 1"))
+    except Exception:
+        return False
+    return True
+
+
+def _queue_ready() -> bool:
+    try:
+        return bool(Redis.from_url(settings.redis_url).ping())
+    except RedisError:
+        return False

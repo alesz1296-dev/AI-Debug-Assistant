@@ -10,9 +10,9 @@ The project must not claim deployment readiness, DevOps readiness, or cloud read
 
 ## Current Milestone
 
-Phase 4 - evaluation quality gates is complete.
+Phase 5 - observability is complete.
 
-Next implementation phase: Phase 5 - observability.
+Next implementation phase: Phase 6 - container and CI validation.
 
 ## End Goal
 
