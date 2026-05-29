@@ -4,6 +4,7 @@ from uuid import uuid4
 
 import pytest
 from app.api import routes as api_routes
+from app.core.config import settings
 from app.db.base import Base
 from app.db.models import KnowledgeRecordRow, RecordEmbeddingRow
 from app.main import app
@@ -15,6 +16,7 @@ from app.schemas.ingestion import (
     LogIngestionJob,
 )
 from app.services.ingestion_jobs import (
+    IngestionQueueUnavailableError,
     get_ingestion_job_status,
     process_debug_case_ingestion,
     process_document_ingestion,
@@ -26,8 +28,17 @@ from app.services.ingestion_jobs import (
 )
 from app.services.retrieval import DatabaseRetriever
 from fastapi.testclient import TestClient
+from redis.exceptions import ConnectionError as RedisConnectionError
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session, sessionmaker
+
+
+@pytest.fixture(autouse=True)
+def enable_sqlite_fallback() -> Generator[None, None, None]:
+    original = settings.allow_sqlite_fallback
+    settings.allow_sqlite_fallback = True
+    yield
+    settings.allow_sqlite_fallback = original
 
 
 @pytest.fixture(autouse=True)
@@ -254,3 +265,71 @@ def test_ingestion_job_status_reports_failure(monkeypatch: pytest.MonkeyPatch) -
     assert response.kind == "document"
     assert response.error_type == "ValueError"
     assert response.error_message == "bad payload"
+
+
+def test_queue_document_ingestion_raises_when_redis_is_unavailable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class BrokenQueue:
+        def enqueue(self, func: object, payload: dict[str, Any], job_id: str) -> object:
+            raise RedisConnectionError("redis down")
+
+    monkeypatch.setattr("app.services.ingestion_jobs.get_ingestion_queue", lambda: BrokenQueue())
+    payload = DocumentIngestionJob(
+        record_id=uuid4(),
+        collection="knowledge_base",
+        title="Queue unavailable",
+        source="docs/queue-unavailable.md",
+        text="This is enough content to satisfy validation while Redis is down.",
+    )
+
+    with pytest.raises(IngestionQueueUnavailableError):
+        queue_document_ingestion(payload)
+
+
+def test_documents_route_returns_503_when_queue_is_unavailable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        api_routes,
+        "queue_document_ingestion",
+        lambda payload: (_ for _ in ()).throw(
+            IngestionQueueUnavailableError("The ingestion queue is currently unavailable.")
+        ),
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/v1/documents",
+        headers={"X-API-Key": "dev-local-key"},
+        json={
+            "collection": "knowledge_base",
+            "title": "Queue via route",
+            "source": "docs/route-queue.md",
+            "text": "This text is long enough to pass validation.",
+        },
+    )
+
+    assert response.status_code == 503
+    assert response.json()["detail"]["error"] == "queue_unavailable"
+
+
+def test_ingestion_job_status_route_returns_503_when_queue_is_unavailable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        api_routes,
+        "get_ingestion_job_status",
+        lambda job_id: (_ for _ in ()).throw(
+            IngestionQueueUnavailableError("The ingestion queue is currently unavailable.")
+        ),
+    )
+
+    client = TestClient(app)
+    response = client.get(
+        "/api/v1/ingestion-jobs/job-123",
+        headers={"X-API-Key": "dev-local-key"},
+    )
+
+    assert response.status_code == 503
+    assert response.json()["detail"]["error"] == "queue_unavailable"

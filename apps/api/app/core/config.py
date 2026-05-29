@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     app_env: str = "local"
     api_key: str = "dev-local-key"
     database_url: str = "postgresql+psycopg://debug:debug@localhost:5432/debug_assistant"
+    allow_sqlite_fallback: bool = False
     redis_url: str = "redis://localhost:6379/0"
     embedding_provider: str = "local"
     llm_provider: str = "local"

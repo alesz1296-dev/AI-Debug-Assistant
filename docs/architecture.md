@@ -16,7 +16,7 @@ flowchart LR
     Store --> KB["knowledge_base"]
 ```
 
-The current implementation boots a runtime database-backed retriever on application startup. For PostgreSQL, startup applies Alembic migrations before seeding and serving requests. For SQLite, startup uses the `create_all()` fallback for lightweight local development and tests. In both cases, it persists knowledge records, deterministic embeddings, retrieval traces, and evaluation runs. Document and log ingestion now enqueue Redis/RQ jobs, and debug-case creation also emits a background indexing job while keeping the immediate debug-case response shape.
+The current implementation boots a runtime database-backed retriever on application startup. For PostgreSQL, startup applies Alembic migrations before seeding and serving requests. SQLite fallback is now explicit and opt-in through `ALLOW_SQLITE_FALLBACK=true`; production-like startup no longer downgrades silently when Postgres is unavailable. In both cases, it persists knowledge records, deterministic embeddings, retrieval traces, and evaluation runs. Document and log ingestion now enqueue Redis/RQ jobs, debug-case creation persists a durable record immediately, and the background worker re-indexes the same debug-case content without changing the API response shape.
 
 ## Target State
 
@@ -36,7 +36,7 @@ flowchart LR
     Eval --> Obs
 ```
 
-The target platform persists records and embeddings, uses pgvector retrieval, moves ingestion through workers, exposes observable runtime signals, and can later be deployed through CI/CD and AWS infrastructure.
+The target platform persists records and embeddings, uses pgvector retrieval, moves ingestion through workers, exposes observable runtime signals, and can later be deployed through CI/CD and AWS infrastructure. Queue failures are now treated as explicit service availability problems at the API boundary instead of implicit server errors.
 
 If the project later needs multi-step stateful incident triage, LangGraph is the likely candidate for the orchestration layer. If the team later wants provider or tool abstraction, LangChain is the likely candidate. For now, both are intentionally out of scope so the platform stays auditable and easy to reason about.
 

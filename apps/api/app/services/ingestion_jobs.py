@@ -3,6 +3,7 @@ from typing import Any, Literal, cast
 from uuid import UUID
 
 from redis import Redis
+from redis.exceptions import RedisError
 from rq import Queue
 from rq.exceptions import NoSuchJobError
 from rq.job import Job
@@ -23,6 +24,10 @@ from app.services.retrieval import DatabaseRetriever, InMemoryRetriever
 INGESTION_QUEUE_NAME = "ingestion"
 
 _WORKER_RETRIEVER_OVERRIDE: DatabaseRetriever | InMemoryRetriever | None = None
+
+
+class IngestionQueueUnavailableError(RuntimeError):
+    pass
 
 
 def get_ingestion_queue() -> Queue:
@@ -46,6 +51,10 @@ def get_ingestion_job_status(job_id: str) -> IngestionJobStatusResponse:
         queue = get_ingestion_queue()
         connection = getattr(queue, "connection", None) or Redis.from_url(settings.redis_url)
         job = Job.fetch(job_id, connection=connection)
+    except RedisError as exc:
+        raise IngestionQueueUnavailableError(
+            "The ingestion queue is currently unavailable."
+        ) from exc
     except NoSuchJobError:
         return IngestionJobStatusResponse(job_id=job_id, status="not_found")
 
@@ -101,14 +110,24 @@ def process_log_ingestion(job_data: dict[str, Any]) -> str:
 
 def process_debug_case_ingestion(job_data: dict[str, Any]) -> str:
     payload = DebugCaseIngestionJob.model_validate(job_data)
+    tags = [*payload.tags]
+    if payload.synthetic and "synthetic" not in tags:
+        tags.insert(0, "synthetic")
     record = KnowledgeRecord(
         id=payload.record_id,
         collection="incident_cases",
         title=payload.title,
         source=f"synthetic://debug-case/{payload.record_id}",
         text=" ".join([payload.title, *payload.symptoms, *payload.logs]),
-        tags=tuple(["synthetic" if payload.synthetic else "public", *payload.tags]),
-        metadata={"environment": payload.environment},
+        tags=tuple(tags),
+        metadata={
+            "kind": "debug_case",
+            "synthetic": payload.synthetic,
+            "symptoms": payload.symptoms,
+            "environment": payload.environment,
+            "logs": payload.logs,
+            "tags": payload.tags,
+        },
     )
     saved = _get_worker_retriever().add(record)
     return str(saved.id)
@@ -125,12 +144,17 @@ def _queue_job(
     payload: DocumentIngestionJob | LogIngestionJob | DebugCaseIngestionJob,
     record_id: UUID,
 ) -> IngestionJobResponse:
-    queue = get_ingestion_queue()
-    job = queue.enqueue(
-        processor,
-        payload.model_dump(mode="json"),
-        job_id=str(record_id),
-    )
+    try:
+        queue = get_ingestion_queue()
+        job = queue.enqueue(
+            processor,
+            payload.model_dump(mode="json"),
+            job_id=str(record_id),
+        )
+    except RedisError as exc:
+        raise IngestionQueueUnavailableError(
+            "The ingestion queue is currently unavailable."
+        ) from exc
     job.meta["kind"] = kind
     cast(Any, job).save_meta()
     return IngestionJobResponse(id=record_id, job_id=job.id, kind=kind, status="queued")

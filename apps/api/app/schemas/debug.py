@@ -78,5 +78,11 @@ class EvaluationRunResponse(BaseModel):
     cases_evaluated: int
     mean_retrieval_score: float
     groundedness_pass_rate: float
+    citation_presence_rate: float
+    mean_latency_ms: float
+    weak_evidence_warning_rate: float
+    no_evidence_warning_rate: float
     failures: list[str]
+    passed: bool
+    thresholds: dict[str, float | int]
 

@@ -24,9 +24,9 @@ Until those gates are complete, the project should be treated as a validated pro
 
 The project is governed by the phase map in `specs/README.md`.
 
-Current planning milestone: Phase 3 - Redis/RQ ingestion workers is complete.
+Current planning milestone: Phase 4 - evaluation quality gates is complete.
 
-Next implementation phase: Phase 4 - evaluation quality gates.
+Next implementation phase: Phase 5 - observability.
 
 - Phase 0: Local MVP baseline.
 - Phase 1: SSD planning hardening.
@@ -71,6 +71,8 @@ Then open:
 - `GET http://127.0.0.1:8000/api/v1/health`
 - `POST http://127.0.0.1:8000/api/v1/query`
 
+The health response now reports the active backend as `postgresql`, `sqlite`, or `sqlite_fallback`.
+
 For local protected routes, use:
 
 ```text
@@ -97,6 +99,10 @@ alembic -c alembic.ini revision --autogenerate -m "describe change"
 ```
 
 The current migration path has been validated against the compose Postgres service using the API image and `alembic upgrade head`.
+
+If you want the app to keep running without Postgres during local development, set `ALLOW_SQLITE_FALLBACK=true` explicitly. Otherwise startup will fail fast when the configured Postgres database is unavailable.
+
+Evaluation runs now return pass/fail status, threshold values, citation presence rate, latency, and warning rates. When the active retriever is database-backed, those evaluation runs are also persisted for later audit.
 
 ## Local Ingestion Worker
 
@@ -135,6 +141,8 @@ For a full local worker loop:
    ```
 
 The job status endpoint reports queued, started, finished, failed, or not found, and exposes the failure type/message when a job crashes locally.
+
+If Redis is unavailable, ingestion endpoints and job-status lookup now return `503` with a structured `queue_unavailable` error instead of a raw server exception.
 
 ## Data Policy
 

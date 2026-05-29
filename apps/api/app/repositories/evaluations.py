@@ -14,6 +14,12 @@ class EvaluationRunRepository:
         cases_evaluated: int,
         mean_retrieval_score: float,
         groundedness_pass_rate: float,
+        citation_presence_rate: float,
+        mean_latency_ms: float,
+        weak_evidence_warning_rate: float,
+        no_evidence_warning_rate: float,
+        passed: bool,
+        thresholds: dict[str, float | int],
         failures: list[str],
     ) -> None:
         self.session.add(
@@ -22,6 +28,12 @@ class EvaluationRunRepository:
                 cases_evaluated=cases_evaluated,
                 mean_retrieval_score=mean_retrieval_score,
                 groundedness_pass_rate=groundedness_pass_rate,
+                citation_presence_rate=citation_presence_rate,
+                mean_latency_ms=mean_latency_ms,
+                weak_evidence_warning_rate=weak_evidence_warning_rate,
+                no_evidence_warning_rate=no_evidence_warning_rate,
+                passed=passed,
+                thresholds=thresholds,
                 failures=failures,
             )
         )
@@ -29,3 +41,8 @@ class EvaluationRunRepository:
 
     def count(self) -> int:
         return len(self.session.scalars(select(EvaluationRunRow.id)).all())
+
+    def latest(self) -> EvaluationRunRow | None:
+        return self.session.scalar(
+            select(EvaluationRunRow).order_by(EvaluationRunRow.created_at.desc())
+        )

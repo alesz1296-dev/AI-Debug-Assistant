@@ -23,7 +23,7 @@ class AppRuntime:
 
 def build_runtime(database_url: str | None = None, seed: bool = True) -> AppRuntime:
     url = database_url or settings.database_url
-    engine = _build_engine(url)
+    engine, fallback_used = _build_engine(url)
     session = sessionmaker(bind=engine, autoflush=False, autocommit=False, expire_on_commit=False)()
     if engine.dialect.name == "postgresql":
         apply_migrations(url)
@@ -35,21 +35,34 @@ def build_runtime(database_url: str | None = None, seed: bool = True) -> AppRunt
         engine=engine,
         session=session,
         retriever=DatabaseRetriever(session),
-        backend_name="postgresql" if engine.dialect.name == "postgresql" else "sqlite",
+        backend_name=_backend_name(engine, fallback_used),
     )
 
 
-def _build_engine(database_url: str) -> Engine:
+def _build_engine(database_url: str) -> tuple[Engine, bool]:
     try:
         engine = create_engine(database_url)
         with engine.connect():
             pass
-        return engine
+        return engine, False
     except SQLAlchemyError:
         if database_url.startswith("sqlite"):
             raise
-        return create_engine(
-            "sqlite://",
-            connect_args={"check_same_thread": False},
-            poolclass=StaticPool,
+        if not settings.allow_sqlite_fallback:
+            raise
+        return (
+            create_engine(
+                "sqlite://",
+                connect_args={"check_same_thread": False},
+                poolclass=StaticPool,
+            ),
+            True,
         )
+
+
+def _backend_name(engine: Engine, fallback_used: bool) -> str:
+    if fallback_used:
+        return "sqlite_fallback"
+    if engine.dialect.name == "postgresql":
+        return "postgresql"
+    return "sqlite"

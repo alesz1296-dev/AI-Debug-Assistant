@@ -10,9 +10,9 @@ The project must not claim deployment readiness, DevOps readiness, or cloud read
 
 ## Current Milestone
 
-Phase 3 - Redis/RQ ingestion workers is complete.
+Phase 4 - evaluation quality gates is complete.
 
-Next implementation phase: Phase 4 - evaluation quality gates.
+Next implementation phase: Phase 5 - observability.
 
 ## End Goal
 

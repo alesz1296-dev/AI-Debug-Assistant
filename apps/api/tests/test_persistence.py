@@ -1,11 +1,14 @@
+import pytest
 from app.db.init_db import initialize_database
 from app.models.records import KnowledgeRecord
 from app.repositories.embeddings import RecordEmbeddingRepository
 from app.repositories.evaluations import EvaluationRunRepository
 from app.repositories.records import KnowledgeRecordRepository
 from app.repositories.retrieval_traces import RetrievalTraceRepository
+from app.services import evaluation as evaluation_module
 from app.services.embeddings import LocalEmbeddingModel
 from app.services.evaluation import run_evaluation
+from app.services.evaluation_thresholds import EvaluationThresholds
 from app.services.retrieval import DatabaseRetriever, get_retriever, set_retriever
 from app.services.seed_data import SEED_RECORDS
 from app.services.seed_records import seed_knowledge_records
@@ -123,7 +126,48 @@ def test_evaluation_runs_are_persisted() -> None:
         set_retriever(original)
 
     repository = EvaluationRunRepository(session)
+    latest = repository.latest()
 
-    assert response.cases_evaluated == 2
+    assert response.cases_evaluated == 5
     assert response.groundedness_pass_rate > 0
+    assert response.citation_presence_rate > 0
+    assert response.mean_latency_ms >= 0
+    assert response.passed in {True, False}
+    assert "min_no_evidence_warning_rate" in response.thresholds
     assert repository.count() == 1
+    assert latest is not None
+    assert latest.passed == response.passed
+    assert latest.thresholds == response.thresholds
+    assert latest.mean_latency_ms == response.mean_latency_ms
+    assert latest.citation_presence_rate == response.citation_presence_rate
+
+
+def test_evaluation_failure_behavior_can_be_forced(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    session = _session()
+    seed_knowledge_records(session)
+    original = get_retriever()
+    set_retriever(DatabaseRetriever(session))
+    monkeypatch.setattr(
+        evaluation_module,
+        "DEFAULT_EVALUATION_THRESHOLDS",
+        EvaluationThresholds(
+            min_mean_retrieval_score=1.1,
+            min_groundedness_pass_rate=1.1,
+            min_citation_presence_rate=1.1,
+            max_mean_latency_ms=1,
+            min_weak_evidence_warning_rate=2.0,
+            min_no_evidence_warning_rate=2.0,
+        ),
+    )
+    try:
+        response = run_evaluation()
+    finally:
+        set_retriever(original)
+
+    assert response.passed is False
+    assert response.failures
+    assert any("Low retrieval match" in failure for failure in response.failures)
+    assert any("Citation presence rate" in failure for failure in response.failures)
+    assert any("Weak-evidence warning rate" in failure for failure in response.failures)

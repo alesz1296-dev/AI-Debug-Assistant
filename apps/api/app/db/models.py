@@ -133,6 +133,12 @@ class EvaluationRunRow(Base):
     cases_evaluated: Mapped[int] = mapped_column(Integer, nullable=False)
     mean_retrieval_score: Mapped[float] = mapped_column(Float, nullable=False)
     groundedness_pass_rate: Mapped[float] = mapped_column(Float, nullable=False)
+    citation_presence_rate: Mapped[float] = mapped_column(Float, nullable=False)
+    mean_latency_ms: Mapped[float] = mapped_column(Float, nullable=False)
+    weak_evidence_warning_rate: Mapped[float] = mapped_column(Float, nullable=False)
+    no_evidence_warning_rate: Mapped[float] = mapped_column(Float, nullable=False)
+    passed: Mapped[bool] = mapped_column(nullable=False)
+    thresholds: Mapped[dict[str, float | int]] = mapped_column(_json_type(), nullable=False)
     failures: Mapped[list[str]] = mapped_column(_json_type(), nullable=False, default=list)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

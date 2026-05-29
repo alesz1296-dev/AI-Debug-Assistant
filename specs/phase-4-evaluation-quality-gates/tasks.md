@@ -1,8 +1,8 @@
 # Phase 4 Tasks: Evaluation + Quality Gates
 
-- [ ] Define numeric evaluation thresholds.
-- [ ] Add more golden cases.
-- [ ] Add weak-evidence and no-evidence cases.
-- [ ] Return deterministic pass/fail status from evaluation.
-- [ ] Add tests for evaluation failure behavior.
-- [ ] Document CI quality gate behavior.
+- [x] Define numeric evaluation thresholds.
+- [x] Add more golden cases.
+- [x] Add weak-evidence and no-evidence cases.
+- [x] Return deterministic pass/fail status from evaluation.
+- [x] Add tests for evaluation failure behavior.
+- [x] Document CI quality gate behavior.
