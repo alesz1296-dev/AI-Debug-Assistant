@@ -4,6 +4,13 @@
 
 Complete. Structured logging, request IDs, readiness, metrics, and local observability proof are in place.
 
+## Post-Completion Hardening
+
+- [x] Add separate readiness degradation counters.
+- [x] Add explicit worker job success/failure logs by ingestion kind.
+- [ ] Optionally add histogram-style latency buckets later.
+- [ ] Optionally add per-job worker timing later.
+
 ## Session 1: Logging Foundation
 
 - [x] Add structured logging configuration.

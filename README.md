@@ -77,7 +77,7 @@ The health response stays lightweight and reports the active backend as `postgre
 The readiness response reports `ok` or `degraded` based on runtime initialization, database reachability, and Redis queue availability.
 
 Structured JSON logs are enabled through `structlog`. Use `LOG_LEVEL=INFO` by default, or set a different level in `.env` for local debugging.
-The metrics endpoint exposes a Prometheus-style text surface for local request, query, ingestion, and evaluation signals.
+The metrics endpoint exposes a Prometheus-style text surface for local request, readiness, query, ingestion, and evaluation signals.
 
 For local protected routes, use:
 
@@ -156,7 +156,14 @@ If Redis is unavailable, ingestion endpoints and job-status lookup now return `5
 2. Call `/api/v1/health`, `/api/v1/ready`, and `/api/v1/query`.
 3. Run `/api/v1/evaluations/run` with the API key.
 4. Open `/api/v1/metrics` and confirm request, query, ingestion, and evaluation counters are present.
-5. Review the JSON logs for `runtime.started`, `http.request.completed`, `query.completed`, `evaluation.completed`, and `readiness.checked`.
+5. Confirm readiness metrics include `enterprise_ai_readiness_checks_total` and, when degraded, `enterprise_ai_readiness_degraded_total`.
+6. Review the JSON logs for `runtime.started`, `http.request.completed`, `query.completed`, `evaluation.completed`, `readiness.checked`, `ingestion.job.succeeded`, and `ingestion.job.failed`.
+
+## Optional Observability Follow-Ups
+
+- Add histogram-style latency buckets if we later want a more serious metrics surface than sum/count pairs.
+- Add more readiness-degradation detail if container/runtime failure modes become more varied in Phase 6 or later.
+- Expand worker observability with per-job timing if background ingestion becomes a stronger performance concern.
 
 ## Data Policy
 

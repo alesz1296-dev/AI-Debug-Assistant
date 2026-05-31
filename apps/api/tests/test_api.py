@@ -50,6 +50,9 @@ def test_ready_returns_ok_when_dependencies_are_available(
     assert body["dependencies"]["runtime"] == "ok"
     assert body["dependencies"]["database"] == "ok"
     assert body["dependencies"]["redis_queue"] == "ok"
+    assert 'enterprise_ai_readiness_checks_total{status="ok"} 1' in (
+        metrics_registry.render_prometheus()
+    )
 
 
 def test_ready_returns_503_when_dependency_is_degraded(
@@ -66,6 +69,9 @@ def test_ready_returns_503_when_dependency_is_degraded(
     body = response.json()
     assert body["status"] == "degraded"
     assert body["dependencies"]["redis_queue"] == "unavailable"
+    metrics = metrics_registry.render_prometheus()
+    assert 'enterprise_ai_readiness_checks_total{status="degraded"} 1' in metrics
+    assert 'enterprise_ai_readiness_degraded_total{reason="redis_queue"} 1' in metrics
 
 
 def test_query_returns_grounded_shape(client: TestClient) -> None:

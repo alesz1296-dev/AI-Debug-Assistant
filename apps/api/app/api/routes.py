@@ -66,6 +66,13 @@ def ready(request: Request) -> JSONResponse:
     database_ready = _database_ready(request) if runtime_ready else False
     queue_ready = _queue_ready()
     backend_name = getattr(getattr(request.app.state, "runtime", None), "backend_name", "unknown")
+    degraded_reasons: list[str] = []
+    if not runtime_ready:
+        degraded_reasons.append("runtime")
+    if runtime_ready and not database_ready:
+        degraded_reasons.append("database")
+    if not queue_ready:
+        degraded_reasons.append("redis_queue")
     status_code = (
         status.HTTP_200_OK
         if runtime_ready and database_ready and queue_ready
@@ -81,6 +88,7 @@ def ready(request: Request) -> JSONResponse:
             "redis_queue": "ok" if queue_ready else "unavailable",
         },
     }
+    metrics_registry.record_readiness_check(payload["status"], degraded_reasons)
     get_logger(__name__, component="api.routes").info(
         "readiness.checked",
         status=payload["status"],
@@ -88,6 +96,7 @@ def ready(request: Request) -> JSONResponse:
         runtime_ready=runtime_ready,
         database_ready=database_ready,
         queue_ready=queue_ready,
+        degraded_reasons=degraded_reasons,
     )
     return JSONResponse(status_code=status_code, content=payload)
 

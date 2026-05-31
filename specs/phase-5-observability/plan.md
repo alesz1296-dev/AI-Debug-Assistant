@@ -14,9 +14,10 @@ Add local observability before cloud observability. Keep the first implementatio
 ## Signals
 
 - Request count and latency.
+- Readiness checks and degraded reasons.
 - Retrieval hit count and score summary.
 - Evaluation pass/fail summary.
-- Ingestion success and failure.
+- Ingestion enqueue success/failure and worker job success/failure.
 - Health and readiness state.
 
 ## Architecture Overview
@@ -49,3 +50,8 @@ flowchart LR
 - Tests for metrics surface where deterministic.
 - Manual local proof of logs and metrics.
 - Documentation updates for the operational demo.
+
+## Optional Follow-Ups
+
+- Replace some latency sum/count pairs with histogram-style buckets if later tooling needs them.
+- Add per-job worker duration once background throughput becomes worth tuning explicitly.

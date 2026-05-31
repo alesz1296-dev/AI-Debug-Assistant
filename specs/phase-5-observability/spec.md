@@ -18,7 +18,7 @@ Make the service inspectable during local and deployed operation through logs, m
 - Local run shows structured logs for main workflows.
 - Every HTTP response includes a request ID.
 - Request logs include method, path, status code, latency, and request ID.
-- Metrics expose request latency and retrieval/evaluation signals.
+- Metrics expose request latency, readiness degradation, and retrieval/evaluation signals.
 - Health and readiness endpoints are separate, documented, and tested.
 - Readiness can report dependency degradation without pretending the service is fully ready.
 - Observability docs explain how to prove the service is alive and useful.
@@ -28,3 +28,9 @@ Make the service inspectable during local and deployed operation through logs, m
 - Managed Grafana.
 - Cloud log aggregation.
 - Distributed tracing across external systems.
+
+## Optional Follow-Ups
+
+- Add histogram-style latency buckets if later phases need a more Prometheus-native metrics shape.
+- Add finer readiness-reason detail if the dependency graph grows beyond runtime, database, and queue checks.
+- Add worker job timing if ingestion throughput analysis becomes part of the operational story.

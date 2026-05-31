@@ -177,6 +177,10 @@ def test_process_document_ingestion_persists_record_and_embedding(
         select(RecordEmbeddingRow.id).where(RecordEmbeddingRow.record_id == str(payload.record_id))
     )
     assert embedding_id is not None
+    assert (
+        'enterprise_ai_ingestion_jobs_processed_total{kind="document",status="succeeded"} 1'
+        in metrics_registry.render_prometheus()
+    )
 
 
 def test_process_log_ingestion_persists_record(sqlite_session: Session) -> None:
@@ -295,6 +299,31 @@ def test_queue_document_ingestion_raises_when_redis_is_unavailable(
         'enterprise_ai_ingestion_queue_unavailable_total'
         '{operation="enqueue",kind="document"} 1'
     ) in metrics_registry.render_prometheus()
+
+
+def test_process_document_ingestion_records_failed_job_metric(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class BrokenRetriever:
+        def add(self, record: object) -> object:
+            raise RuntimeError("write failed")
+
+    set_worker_retriever(BrokenRetriever())  # type: ignore[arg-type]
+    payload = DocumentIngestionJob(
+        record_id=uuid4(),
+        collection="knowledge_base",
+        title="Broken worker write",
+        source="docs/broken-worker.md",
+        text="Enough content to trigger worker processing before persistence fails.",
+    )
+
+    with pytest.raises(RuntimeError, match="write failed"):
+        process_document_ingestion(payload.model_dump(mode="json"))
+
+    assert (
+        'enterprise_ai_ingestion_jobs_processed_total{kind="document",status="failed"} 1'
+        in metrics_registry.render_prometheus()
+    )
 
 
 def test_documents_route_returns_503_when_queue_is_unavailable(

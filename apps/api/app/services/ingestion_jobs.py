@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from functools import lru_cache
 from typing import Any, Literal, cast
 from uuid import UUID
@@ -84,36 +85,40 @@ def get_ingestion_job_status(job_id: str) -> IngestionJobStatusResponse:
 
 def process_document_ingestion(job_data: dict[str, Any]) -> str:
     payload = DocumentIngestionJob.model_validate(job_data)
-    record = KnowledgeRecord(
-        id=payload.record_id,
-        collection=payload.collection,
-        title=payload.title,
-        source=payload.source,
-        text=payload.text,
-        tags=tuple(payload.tags),
-        metadata={"synthetic": payload.synthetic},
+    return _process_ingestion_record(
+        kind="document",
+        record_id=payload.record_id,
+        build_record=lambda: KnowledgeRecord(
+            id=payload.record_id,
+            collection=payload.collection,
+            title=payload.title,
+            source=payload.source,
+            text=payload.text,
+            tags=tuple(payload.tags),
+            metadata={"synthetic": payload.synthetic},
+        ),
     )
-    saved = _get_worker_retriever().add(record)
-    return str(saved.id)
 
 
 def process_log_ingestion(job_data: dict[str, Any]) -> str:
     payload = LogIngestionJob.model_validate(job_data)
-    record = KnowledgeRecord(
-        id=payload.record_id,
-        collection="system_logs",
-        title=f"{payload.service} {payload.severity} log",
-        source=f"log://{payload.source_dataset}/{payload.service}",
-        text=payload.raw_message,
-        tags=tuple(["log", payload.service.lower(), payload.severity.lower(), *payload.tags]),
-        metadata={
-            "timestamp": payload.timestamp,
-            "anomaly_label": payload.anomaly_label,
-            "source_dataset": payload.source_dataset,
-        },
+    return _process_ingestion_record(
+        kind="log",
+        record_id=payload.record_id,
+        build_record=lambda: KnowledgeRecord(
+            id=payload.record_id,
+            collection="system_logs",
+            title=f"{payload.service} {payload.severity} log",
+            source=f"log://{payload.source_dataset}/{payload.service}",
+            text=payload.raw_message,
+            tags=tuple(["log", payload.service.lower(), payload.severity.lower(), *payload.tags]),
+            metadata={
+                "timestamp": payload.timestamp,
+                "anomaly_label": payload.anomaly_label,
+                "source_dataset": payload.source_dataset,
+            },
+        ),
     )
-    saved = _get_worker_retriever().add(record)
-    return str(saved.id)
 
 
 def process_debug_case_ingestion(job_data: dict[str, Any]) -> str:
@@ -121,24 +126,26 @@ def process_debug_case_ingestion(job_data: dict[str, Any]) -> str:
     tags = [*payload.tags]
     if payload.synthetic and "synthetic" not in tags:
         tags.insert(0, "synthetic")
-    record = KnowledgeRecord(
-        id=payload.record_id,
-        collection="incident_cases",
-        title=payload.title,
-        source=f"synthetic://debug-case/{payload.record_id}",
-        text=" ".join([payload.title, *payload.symptoms, *payload.logs]),
-        tags=tuple(tags),
-        metadata={
-            "kind": "debug_case",
-            "synthetic": payload.synthetic,
-            "symptoms": payload.symptoms,
-            "environment": payload.environment,
-            "logs": payload.logs,
-            "tags": payload.tags,
-        },
+    return _process_ingestion_record(
+        kind="debug_case",
+        record_id=payload.record_id,
+        build_record=lambda: KnowledgeRecord(
+            id=payload.record_id,
+            collection="incident_cases",
+            title=payload.title,
+            source=f"synthetic://debug-case/{payload.record_id}",
+            text=" ".join([payload.title, *payload.symptoms, *payload.logs]),
+            tags=tuple(tags),
+            metadata={
+                "kind": "debug_case",
+                "synthetic": payload.synthetic,
+                "symptoms": payload.symptoms,
+                "environment": payload.environment,
+                "logs": payload.logs,
+                "tags": payload.tags,
+            },
+        ),
     )
-    saved = _get_worker_retriever().add(record)
-    return str(saved.id)
 
 
 def set_worker_retriever(retriever: DatabaseRetriever | InMemoryRetriever | None) -> None:
@@ -173,6 +180,25 @@ def _queue_job(
     job.meta["kind"] = kind
     cast(Any, job).save_meta()
     return IngestionJobResponse(id=record_id, job_id=job.id, kind=kind, status="queued")
+
+
+def _process_ingestion_record(
+    kind: Literal["document", "log", "debug_case"],
+    record_id: UUID,
+    build_record: Callable[[], KnowledgeRecord],
+) -> str:
+    logger = get_logger(__name__, component="worker.ingestion")
+    logger.info("ingestion.job.started", kind=kind, record_id=str(record_id))
+    try:
+        record = build_record()
+        saved = _get_worker_retriever().add(record)
+    except Exception:
+        metrics_registry.record_ingestion_job_processed(kind=kind, status="failed")
+        logger.exception("ingestion.job.failed", kind=kind, record_id=str(record_id))
+        raise
+    metrics_registry.record_ingestion_job_processed(kind=kind, status="succeeded")
+    logger.info("ingestion.job.succeeded", kind=kind, record_id=str(saved.id))
+    return str(saved.id)
 
 
 def _get_worker_retriever() -> DatabaseRetriever | InMemoryRetriever:

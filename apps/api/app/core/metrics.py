@@ -12,6 +12,8 @@ class MetricsRegistry:
             self.http_requests_total: dict[tuple[str, str, str], int] = defaultdict(int)
             self.http_request_latency_ms_sum: dict[tuple[str, str], float] = defaultdict(float)
             self.http_request_latency_ms_count: dict[tuple[str, str], int] = defaultdict(int)
+            self.readiness_checks_total: dict[str, int] = defaultdict(int)
+            self.readiness_degraded_total: dict[str, int] = defaultdict(int)
             self.query_requests_total = 0
             self.query_latency_ms_sum = 0.0
             self.query_latency_ms_count = 0
@@ -20,6 +22,7 @@ class MetricsRegistry:
             self.query_confidence_count = 0
             self.ingestion_enqueue_success_total: dict[str, int] = defaultdict(int)
             self.ingestion_queue_unavailable_total: dict[tuple[str, str], int] = defaultdict(int)
+            self.ingestion_jobs_processed_total: dict[tuple[str, str], int] = defaultdict(int)
             self.evaluation_runs_total = 0
             self.evaluation_runs_passed_total = 0
             self.evaluation_runs_failed_total = 0
@@ -39,6 +42,12 @@ class MetricsRegistry:
             self.http_request_latency_ms_sum[(method, path)] += latency_ms
             self.http_request_latency_ms_count[(method, path)] += 1
 
+    def record_readiness_check(self, status: str, degraded_reasons: list[str]) -> None:
+        with self._lock:
+            self.readiness_checks_total[status] += 1
+            for reason in degraded_reasons:
+                self.readiness_degraded_total[reason] += 1
+
     def record_query(self, latency_ms: int, citations_count: int, confidence: float) -> None:
         with self._lock:
             self.query_requests_total += 1
@@ -55,6 +64,10 @@ class MetricsRegistry:
     def record_ingestion_queue_unavailable(self, operation: str, kind: str) -> None:
         with self._lock:
             self.ingestion_queue_unavailable_total[(operation, kind)] += 1
+
+    def record_ingestion_job_processed(self, kind: str, status: str) -> None:
+        with self._lock:
+            self.ingestion_jobs_processed_total[(kind, status)] += 1
 
     def record_evaluation(
         self,
@@ -108,6 +121,22 @@ class MetricsRegistry:
                             self.http_request_latency_ms_count.items()
                         )
                     ],
+                    "# TYPE enterprise_ai_readiness_checks_total counter",
+                    *[
+                        (
+                            'enterprise_ai_readiness_checks_total'
+                            f'{{status="{status}"}} {count}'
+                        )
+                        for status, count in sorted(self.readiness_checks_total.items())
+                    ],
+                    "# TYPE enterprise_ai_readiness_degraded_total counter",
+                    *[
+                        (
+                            'enterprise_ai_readiness_degraded_total'
+                            f'{{reason="{reason}"}} {count}'
+                        )
+                        for reason, count in sorted(self.readiness_degraded_total.items())
+                    ],
                     "# TYPE enterprise_ai_query_requests_total counter",
                     f"enterprise_ai_query_requests_total {self.query_requests_total}",
                     "# TYPE enterprise_ai_query_latency_ms_sum counter",
@@ -136,6 +165,16 @@ class MetricsRegistry:
                         )
                         for (operation, kind), count in sorted(
                             self.ingestion_queue_unavailable_total.items()
+                        )
+                    ],
+                    "# TYPE enterprise_ai_ingestion_jobs_processed_total counter",
+                    *[
+                        (
+                            'enterprise_ai_ingestion_jobs_processed_total'
+                            f'{{kind="{kind}",status="{status}"}} {count}'
+                        )
+                        for (kind, status), count in sorted(
+                            self.ingestion_jobs_processed_total.items()
                         )
                     ],
                     "# TYPE enterprise_ai_evaluation_runs_total counter",

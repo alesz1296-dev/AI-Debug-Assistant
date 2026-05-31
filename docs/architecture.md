@@ -62,7 +62,9 @@ flowchart LR
     Ready --> Queue
 ```
 
-Phase 5 adds local application observability before cloud observability. The implementation order is structured logging, request IDs, readiness, and metrics. Grafana dashboards, cloud log aggregation, alerting, and Kubernetes monitoring stay out of scope until later DevOps phases.
+Phase 5 adds local application observability before cloud observability. The implementation order is structured logging, request IDs, readiness, and metrics. The current metrics surface now includes separate readiness degradation counters and worker-job outcome signals, while Grafana dashboards, cloud log aggregation, alerting, and Kubernetes monitoring stay out of scope until later DevOps phases.
+
+Optional follow-up improvements remain intentionally separate from the completed Phase 5 gate: histogram-style latency buckets, richer readiness-reason breakdowns if new dependencies appear, and per-job worker timing if ingestion throughput becomes a tuning target.
 
 If the project later needs multi-step stateful incident triage, LangGraph is the likely candidate for the orchestration layer. If the team later wants provider or tool abstraction, LangChain is the likely candidate. For now, both are intentionally out of scope so the platform stays auditable and easy to reason about.
 
