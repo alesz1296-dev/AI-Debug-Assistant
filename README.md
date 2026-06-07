@@ -35,7 +35,7 @@ Next implementation phase: Phase 6 - container and CI validation.
 - Phase 4: evaluation quality gates.
 - Phase 5: observability.
 - Phase 6: container and CI validation.
-- Phase 7: DevOps-ready milestone and manual-development handoff.
+- Phase 7: DevOps-ready milestone and hardening.
 - Phase 8: AWS, Kubernetes, Terraform, and cloud deployment.
 - Phase 9: optional dashboard.
 
