@@ -75,15 +75,19 @@ class DatabaseRetriever:
         self.traces = RetrievalTraceRepository(session)
 
     def add(self, record: KnowledgeRecord) -> KnowledgeRecord:
-        saved_record = self.records.upsert_by_source(record)
-        self.embeddings.upsert(
-            record_id=saved_record.id,
-            vector=self.embedding_model.embed(saved_record.text),
-            provider=self.embedding_model.provider,
-            model=self.embedding_model.model,
-        )
-        self.session.commit()
-        return saved_record
+        try:
+            saved_record = self.records.upsert_by_source(record)
+            self.embeddings.upsert(
+                record_id=saved_record.id,
+                vector=self.embedding_model.embed(saved_record.text),
+                provider=self.embedding_model.provider,
+                model=self.embedding_model.model,
+            )
+            self.session.commit()
+            return saved_record
+        except Exception:
+            self.session.rollback()
+            raise
 
     def search(
         self,
@@ -91,23 +95,27 @@ class DatabaseRetriever:
         collections: list[CollectionName],
         top_k: int,
     ) -> RetrievalTrace:
-        query_vector = self.embedding_model.embed(question)
-        hits = (
-            self._search_postgres(question, collections, top_k, query_vector)
-            if self.session.bind is not None and self.session.bind.dialect.name == "postgresql"
-            else self._search_portable(question, collections, top_k, query_vector)
-        )
-        trace_id = self.traces.create_trace(
-            question=question,
-            collections=collections,
-            top_k=top_k,
-            embedding_provider=self.embedding_model.provider,
-            embedding_model=self.embedding_model.model,
-        )
-        for rank, hit in enumerate(hits, start=1):
-            self.traces.add_hit(trace_id, hit.record.id, rank=rank, score=hit.score)
-        self.session.commit()
-        return RetrievalTrace(id=trace_id, question=question, hits=hits)
+        try:
+            query_vector = self.embedding_model.embed(question)
+            hits = (
+                self._search_postgres(question, collections, top_k, query_vector)
+                if self.session.bind is not None and self.session.bind.dialect.name == "postgresql"
+                else self._search_portable(question, collections, top_k, query_vector)
+            )
+            trace_id = self.traces.create_trace(
+                question=question,
+                collections=collections,
+                top_k=top_k,
+                embedding_provider=self.embedding_model.provider,
+                embedding_model=self.embedding_model.model,
+            )
+            for rank, hit in enumerate(hits, start=1):
+                self.traces.add_hit(trace_id, hit.record.id, rank=rank, score=hit.score)
+            self.session.commit()
+            return RetrievalTrace(id=trace_id, question=question, hits=hits)
+        except Exception:
+            self.session.rollback()
+            raise
 
     def citations_for(self, hits: list[RetrievalHit]) -> list[Citation]:
         return citations_for(hits)
