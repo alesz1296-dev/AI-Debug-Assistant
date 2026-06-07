@@ -7,7 +7,6 @@ Create Date: 2026-06-07 00:00:00.000000
 
 from alembic import op
 
-
 revision = "0003_enable_vector"
 down_revision = "0002_eval_audit_fields"
 branch_labels = None
