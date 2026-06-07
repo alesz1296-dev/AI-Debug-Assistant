@@ -1,3 +1,5 @@
+name: ai-debug-assistant
+
 services:
   postgres:
     image: pgvector/pgvector:pg16

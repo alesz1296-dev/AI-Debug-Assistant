@@ -110,6 +110,44 @@ If you want the app to keep running without Postgres during local development, s
 
 Evaluation runs now return pass/fail status, threshold values, citation presence rate, latency, and warning rates. When the active retriever is database-backed, those evaluation runs are also persisted for later audit.
 
+## Phase 6 Validation Status
+
+Phase 6 container validation is now partially complete and has been proven against the local Docker Compose stack.
+
+Validated so far:
+
+- `docker compose -f infra/docker-compose.yml ps` shows `api`, `postgres`, and `redis` as `Up`.
+- The API image has been used to run Alembic successfully through `0003_enable_vector`.
+- `GET /api/v1/health` returns `status: ok` with `backend: postgresql`.
+- `GET /api/v1/ready` returns `status: ok` with `runtime`, `database`, and `redis_queue` all reporting `ok`.
+- `GET /api/v1/metrics` returns a Prometheus-style metrics surface with live request and readiness counters.
+- `POST /api/v1/query` succeeds in the containerized stack and returns a grounded response with citations, warnings, `retrieval_trace_id`, and latency.
+- Query-path stability now depends on the validated `vector` extension migration and retrieval-session rollback handling after database errors.
+
+Still pending in Phase 6:
+
+- CI type-check validation in GitHub Actions.
+- CI Docker image build validation in GitHub Actions.
+- A final clean-checkout review to make sure the docs and workflow stay aligned as the phase closes.
+
+## Current CI Coverage
+
+The current GitHub Actions workflow validates a smaller slice than the full Phase 6 target.
+
+Present in CI today:
+
+- dependency install
+- `ruff check .`
+- `pytest -q`
+
+Not yet present in CI:
+
+- `mypy`
+- Docker image build validation
+- compose or migration-path validation
+
+That means the local container/runtime path is now stronger than the current CI safety net, and Phase 6 remains open until that gap is closed.
+
 ## Local Ingestion Worker
 
 When Redis is running locally, the ingestion worker can be started with:
@@ -127,6 +165,8 @@ For a full local worker loop:
    ```powershell
    docker compose -f infra/docker-compose.yml up -d postgres redis
    ```
+
+   The Docker Compose project is named `ai-debug-assistant`, so that is the name you should expect to see in Docker Desktop rather than a generic label like `infra`.
 
 2. Start the API:
 
