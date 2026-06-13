@@ -11,26 +11,26 @@
 
 These items are mandatory before the repo can be called deployment-ready:
 
-- [ ] Replace in-memory retrieval with PostgreSQL persistence.
-- [ ] Replace in-memory retrieval with pgvector or an equivalent vector store.
-- [ ] Add a worker or queue boundary for ingestion that should not run inline.
-- [ ] Add container build files and a verified local container run path.
-- [ ] Add CI that runs lint, tests, and build checks on every pull request.
-- [ ] Add OpenTelemetry traces or equivalent runtime observability hooks.
-- [ ] Add structured logs for query and ingestion operations.
-- [ ] Add readiness for orchestration with health and readiness endpoints documented.
+- [x] Replace in-memory retrieval with PostgreSQL persistence.
+- [x] Replace in-memory retrieval with pgvector or an equivalent vector store.
+- [x] Add a worker or queue boundary for ingestion that should not run inline.
+- [x] Add container build files and a verified local container run path.
+- [x] Add CI that runs lint, tests, and build checks on every pull request.
+- [x] Add OpenTelemetry traces or equivalent runtime observability hooks.
+- [x] Add structured logs for query and ingestion operations.
+- [x] Add readiness for orchestration with health and readiness endpoints documented.
 - [ ] Add deployment automation for the target cloud environment.
 - [ ] Document the deployment path from clean checkout to running service.
 
 ## DevOps-Ready Gates
 
-These items are mandatory before the repo can be called DevOps-ready:
+These original gates now separate local DevOps readiness from cloud deployment readiness. Phase 7 satisfies the local platform gates; the remaining cloud gates move to Phase 8.
 
 - [ ] Add Terraform or equivalent infrastructure-as-code for cloud resources.
-- [ ] Add a repeatable environment bootstrap flow.
+- [x] Add a repeatable environment bootstrap flow.
 - [ ] Add a reproducible build-and-publish image workflow.
 - [ ] Add a deployment workflow that does not rely on manual console setup.
-- [ ] Add an operational demo path that proves logs, metrics, and health checks after deploy.
+- [x] Add an operational demo path that proves logs, metrics, and health checks in the local containerized platform.
 
 ## Post-MVP Product Gates
 

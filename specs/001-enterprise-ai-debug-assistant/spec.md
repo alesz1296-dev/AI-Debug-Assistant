@@ -19,7 +19,7 @@ Prove the minimum local AI debugging workflow: safe data policy, FastAPI routes,
 
 ## Deployment-Ready Requirements
 
-Phase 0 is not deployment-ready. The project is not deployment-ready until later phases prove all of these:
+Phase 0 was not deployment-ready. Later phases have since satisfied the local persistence, retrieval, worker, container, CI, readiness, logging, and metrics requirements. Cloud deployment readiness still waits for Phase 8.
 
 - Persistent storage exists for records and ingestion data.
 - Retrieval no longer depends on in-memory state.
@@ -29,19 +29,19 @@ Phase 0 is not deployment-ready. The project is not deployment-ready until later
 - CI runs tests and build checks automatically on every change.
 - The service exposes health and readiness signals suitable for orchestration.
 - Logging and metrics are available for deployed runs.
-- Cloud infrastructure is defined as code, not manual-only setup.
+- Cloud infrastructure is defined as code, not manual-only setup. This remains a Phase 8 requirement.
 
 ## DevOps-Ready Requirements
 
-Phase 0 is not DevOps-ready. The project is not DevOps-ready until later phases prove all of these:
+Phase 0 was not DevOps-ready. Phase 7 now marks the local DevOps-ready milestone, while cloud provisioning and deployment automation remain Phase 8 work.
 
 - A reproducible local environment exists from a clean checkout.
 - Build, test, and lint steps are scripted and repeatable.
 - Container images can be built and validated in CI.
 - Deployable configuration is separated from application code.
-- Cloud resources are provisionable through Terraform or an equivalent IaC layer.
-- The deployment target can be recreated without manual click-through setup.
-- The repo includes an operational demo path that proves the service is observable after deployment.
+- Cloud resources are provisionable through Terraform or an equivalent IaC layer. This remains a Phase 8 requirement.
+- The deployment target can be recreated without manual click-through setup. This remains a Phase 8 requirement.
+- The repo includes an operational demo path that proves the service is observable after deployment. This remains a Phase 8 requirement.
 
 ## Non-Functional Requirements
 
@@ -58,7 +58,7 @@ Phase 0 is not DevOps-ready. The project is not DevOps-ready until later phases 
 - Protected ingestion/evaluation endpoints reject missing API keys.
 - Evaluation returns retrieval and groundedness metrics.
 - Tests pass with the local deterministic retrieval implementation.
-- The repository explicitly records what is still missing before deployment readiness is claimed.
+- The repository explicitly records what is still missing before AWS/cloud deployment readiness is claimed.
 
 ## Out Of Scope
 

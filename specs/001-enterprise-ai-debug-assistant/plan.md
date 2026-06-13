@@ -4,7 +4,7 @@
 
 Start with a local deterministic RAG implementation to prove API contracts, data safety, tests, and learning flow. Keep the retrieval service boundary narrow so PostgreSQL + pgvector can replace the in-memory implementation later.
 
-The current implementation is intentionally below deployment-ready standard. It is a validated local slice, not a cloud-ready service yet.
+The Phase 0 implementation was intentionally below deployment-ready standard. Later phases have now promoted the project to a DevOps-ready local platform, but it is still not a cloud-ready service.
 
 ## Current Slice
 
@@ -17,24 +17,25 @@ The current implementation is intentionally below deployment-ready standard. It 
 
 ## Deployment Readiness Bar
 
-Do not label the project deployment-ready or DevOps-ready until the following are implemented and documented:
+The local DevOps readiness bar is now met through Phase 7. The remaining deployment-readiness work is cloud-specific and belongs to Phase 8.
 
-- persistent database or storage for records and ingestion data
-- non-memory retrieval path
-- vector retrieval backend
-- container build and run path
-- automated CI checks for test, lint, and build
-- infrastructure as code for cloud resources
-- logging and metrics suitable for runtime inspection
-- a repeatable deployment procedure
-- a documented operational demo path
+- [x] persistent database or storage for records and ingestion data
+- [x] non-memory retrieval path
+- [x] vector retrieval backend
+- [x] container build and run path
+- [x] automated CI checks for test, lint, type checks, and build
+- [x] logging and metrics suitable for runtime inspection
+- [x] documented local operational demo path
+- [ ] infrastructure as code for cloud resources
+- [ ] repeatable cloud deployment procedure
+- [ ] deployed operational demo path
 
 ## Later Slices
 
 - PostgreSQL schema and Alembic migrations.
 - pgvector storage and retrieval.
 - Redis/RQ background ingestion jobs.
-- OpenTelemetry instrumentation.
+- local observability instrumentation.
 - React dashboard.
 - Cloud deployment.
 

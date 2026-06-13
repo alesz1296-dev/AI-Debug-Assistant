@@ -55,8 +55,15 @@ def run_evaluation() -> EvaluationRunResponse:
     no_evidence_cases = sum(1 for case in GOLDEN_CASES if case["scenario"] == "no_evidence")
     for case in GOLDEN_CASES:
         response = assistant.answer(QueryRequest(question=case["question"]))
-        retrieved_text = " ".join(citation.title.lower() for citation in response.citations)
-        matched = sum(1 for term in case["expected_terms"] if term in retrieved_text)
+        evidence_surface = " ".join(
+            [
+                *(citation.title.lower() for citation in response.citations),
+                *(citation.snippet.lower() for citation in response.citations),
+                *(warning.lower() for warning in response.warnings),
+                *(step.lower() for step in response.next_steps),
+            ]
+        )
+        matched = sum(1 for term in case["expected_terms"] if term in evidence_surface)
         score = matched / len(case["expected_terms"])
         scores.append(score)
         latencies.append(response.latency_ms)

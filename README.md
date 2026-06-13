@@ -14,19 +14,19 @@ No company data belongs in this repository.
 
 ## Readiness Status
 
-This repository currently contains a working local-first slice, not a deployment-ready or DevOps-ready system.
+This repository has reached the DevOps-ready local platform milestone.
 
-Deployment and DevOps readiness are intentionally gated by `specs/001-enterprise-ai-debug-assistant/spec.md` and `specs/001-enterprise-ai-debug-assistant/tasks.md`.
+That means the app is persistent, observable, containerized, tested, documented, and validated locally with API, Postgres, Redis, worker processing, endpoint checks, and CI build checks.
 
-Until those gates are complete, the project should be treated as a validated prototype rather than a cloud-deployable service.
+It is not AWS-ready or cloud-deployed yet. Cloud infrastructure, deployment workflow, secrets handling, cloud logs/metrics, and teardown documentation belong to Phase 8.
 
 ## SSD Phase Roadmap
 
 The project is governed by the phase map in `specs/README.md`.
 
-Current planning milestone: Phase 5 - observability is complete.
+Current completed milestone: Phase 7 - DevOps-ready milestone and hardening.
 
-Next implementation phase: Phase 6 - container and CI validation.
+Next implementation phase: Phase 8 - AWS, Kubernetes, Terraform, and cloud deployment planning.
 
 - Phase 0: Local MVP baseline.
 - Phase 1: SSD planning hardening.
@@ -112,7 +112,7 @@ Evaluation runs now return pass/fail status, threshold values, citation presence
 
 ## Phase 6 Validation Status
 
-Phase 6 container validation is now partially complete and has been proven against the local Docker Compose stack.
+Phase 6 is complete. The local Docker/Compose runtime, migration path, endpoint behavior, and CI checks have been validated together.
 
 Validated so far:
 
@@ -124,29 +124,50 @@ Validated so far:
 - `POST /api/v1/query` succeeds in the containerized stack and returns a grounded response with citations, warnings, `retrieval_trace_id`, and latency.
 - Query-path stability now depends on the validated `vector` extension migration and retrieval-session rollback handling after database errors.
 
-Still pending in Phase 6:
+CI now validates the Python and container delivery path in sequence:
 
-- CI type-check validation in GitHub Actions.
-- CI Docker image build validation in GitHub Actions.
-- A final clean-checkout review to make sure the docs and workflow stay aligned as the phase closes.
+- dependency install
+- `ruff check .`
+- `mypy apps/api/app apps/api/tests`
+- `pytest -q`
+- `docker compose -f infra/docker-compose.yml build api`
 
 ## Current CI Coverage
 
-The current GitHub Actions workflow validates a smaller slice than the full Phase 6 target.
+The current GitHub Actions workflow now satisfies the Phase 6 CI target.
 
 Present in CI today:
 
 - dependency install
 - `ruff check .`
+- `mypy apps/api/app apps/api/tests`
 - `pytest -q`
+- sequential `docker compose -f infra/docker-compose.yml build api`
 
 Not yet present in CI:
 
-- `mypy`
-- Docker image build validation
-- compose or migration-path validation
+- compose runtime startup validation
+- migration execution validation inside CI
 
-That means the local container/runtime path is now stronger than the current CI safety net, and Phase 6 remains open until that gap is closed.
+Those runtime checks remain part of local validation evidence rather than the current GitHub Actions pipeline, which is enough to close Phase 6 without claiming full cloud readiness.
+
+## Phase 7 Validation Status
+
+Phase 7 is complete. The project is now DevOps-ready as a local platform and ready to begin Phase 8 cloud planning.
+
+Validated Phase 7 evidence:
+
+- Phases 0 through 6 are complete and documented.
+- CI passes install, Ruff, mypy, pytest, and sequential Docker Compose API image build validation.
+- The local Compose stack runs API, Postgres, and Redis.
+- The API reports PostgreSQL-backed health and dependency-aware readiness.
+- A temporary worker processed a Redis/RQ document ingestion job to `finished`.
+- `/api/v1/metrics` exposes request, readiness, query, ingestion, worker, and evaluation counters.
+- `/api/v1/evaluations/run` passes the golden local evaluation suite after the rebuilt API image.
+- API logs include `runtime.started`, `readiness.checked`, `query.completed`, `ingestion.queued`, and `evaluation.completed`.
+- Worker logs include `ingestion.job.succeeded`.
+
+Phase 7 does not create AWS resources, Terraform modules, Kubernetes manifests, or deployment automation. Those are Phase 8 responsibilities.
 
 ## Local Ingestion Worker
 

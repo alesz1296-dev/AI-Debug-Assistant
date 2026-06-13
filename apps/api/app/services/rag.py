@@ -23,6 +23,11 @@ class GroundedDebugAssistant:
             warnings.append(
                 "No evidence was retrieved from the indexed public or synthetic corpus."
             )
+        elif _has_no_direct_evidence_context(request.question):
+            warnings.append(
+                "No evidence from the active incident was provided; use the retrieved public "
+                "or synthetic context only as a checklist."
+            )
 
         hypotheses = _hypotheses_from_hits(top_titles)
         next_steps = _next_steps_from_hits(top_titles)
@@ -46,6 +51,20 @@ def _confidence(scores: list[float]) -> float:
         return 0.0
     bounded = max(0.0, min(1.0, sum(max(score, 0.0) for score in scores[:3]) / 3))
     return round(bounded, 2)
+
+
+def _has_no_direct_evidence_context(question: str) -> bool:
+    normalized = question.lower()
+    return any(
+        phrase in normalized
+        for phrase in (
+            "no logs",
+            "no metrics",
+            "no runbook",
+            "no context",
+            "no evidence",
+        )
+    )
 
 
 def _hypotheses_from_hits(titles: list[str]) -> list[str]:

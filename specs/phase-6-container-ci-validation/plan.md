@@ -24,9 +24,9 @@ README should distinguish local Python setup from containerized setup and should
 
 ## Current CI Status
 
-The current GitHub Actions workflow runs install, Ruff, and pytest only.
+The current GitHub Actions workflow now runs install, Ruff, mypy, pytest, and a sequential Docker Compose API image build.
 
-Still missing against the Phase 6 target:
+Still intentionally outside the Phase 6 CI scope:
 
-- mypy
-- Docker image build validation
+- compose runtime startup validation
+- migration execution inside CI
