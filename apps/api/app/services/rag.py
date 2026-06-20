@@ -1,15 +1,18 @@
 import time
 
 from app.schemas.debug import QueryRequest, QueryResponse
-from app.services.retrieval import get_retriever
+from app.services.retrieval import DatabaseRetriever, InMemoryRetriever
 
 
 class GroundedDebugAssistant:
     model_name = "local-grounded-debug-assistant-v1"
 
-    def answer(self, request: QueryRequest) -> QueryResponse:
+    def answer(
+        self,
+        request: QueryRequest,
+        retriever: DatabaseRetriever | InMemoryRetriever,
+    ) -> QueryResponse:
         started = time.perf_counter()
-        retriever = get_retriever()
         trace = retriever.search(request.question, request.collections, request.top_k)
         citations = retriever.citations_for(trace.hits)
         top_titles = [hit.record.title for hit in trace.hits[:3]]

@@ -38,6 +38,7 @@ from app.services.ingestion_jobs import (
     queue_log_ingestion,
 )
 from app.services.rag import assistant
+from app.services.retrieval import DatabaseRetriever
 
 router = APIRouter()
 
@@ -104,9 +105,10 @@ def ready(request: Request) -> JSONResponse:
 @router.post("/debug-cases", response_model=DebugCase, dependencies=[Depends(require_api_key)])
 def create_debug_case(request: Request, payload: DebugCaseCreate) -> DebugCase:
     debug_case = DebugCase(id=uuid4(), **payload.model_dump())
-    repository = KnowledgeRecordRepository(request.app.state.runtime.session)
-    repository.upsert_by_source(_debug_case_record(debug_case))
-    request.app.state.runtime.session.commit()
+    with request.app.state.runtime.session_factory() as session:
+        repository = KnowledgeRecordRepository(session)
+        repository.upsert_by_source(_debug_case_record(debug_case))
+        session.commit()
     try:
         job = queue_debug_case_ingestion(
             DebugCaseIngestionJob(
@@ -137,8 +139,9 @@ def create_debug_case(request: Request, payload: DebugCaseCreate) -> DebugCase:
     dependencies=[Depends(require_api_key)],
 )
 def get_debug_case(request: Request, case_id: UUID) -> DebugCase:
-    repository = KnowledgeRecordRepository(request.app.state.runtime.session)
-    record = repository.get(case_id)
+    with request.app.state.runtime.session_factory() as session:
+        repository = KnowledgeRecordRepository(session)
+        record = repository.get(case_id)
     if record is None or not _is_debug_case_record(record):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -221,8 +224,9 @@ def get_ingestion_job(job_id: str) -> IngestionJobStatusResponse:
 
 
 @router.post("/query", response_model=QueryResponse)
-def query(payload: QueryRequest) -> QueryResponse:
-    response = assistant.answer(payload)
+def query(request: Request, payload: QueryRequest) -> QueryResponse:
+    with request.app.state.runtime.session_factory() as session:
+        response = assistant.answer(payload, DatabaseRetriever(session))
     metrics_registry.record_query(
         latency_ms=response.latency_ms,
         citations_count=len(response.citations),
@@ -246,12 +250,13 @@ def query(payload: QueryRequest) -> QueryResponse:
     response_model=EvaluationRunResponse,
     dependencies=[Depends(require_api_key)],
 )
-def evaluation_run() -> EvaluationRunResponse:
-    response = run_evaluation()
+def evaluation_run(request: Request) -> EvaluationRunResponse:
+    with request.app.state.runtime.session_factory() as session:
+        response = run_evaluation(DatabaseRetriever(session))
     metrics_registry.record_evaluation(
         passed=response.passed,
-        weak_evidence_warning_rate=response.weak_evidence_warning_rate,
-        no_evidence_warning_rate=response.no_evidence_warning_rate,
+        weak_evidence_case_warning_rate=response.weak_evidence_case_warning_rate,
+        no_evidence_case_warning_rate=response.no_evidence_case_warning_rate,
     )
     get_logger(__name__, component="api.routes").info(
         "evaluation.completed",
@@ -327,7 +332,8 @@ def _database_ready(request: Request) -> bool:
     if runtime is None:
         return False
     try:
-        runtime.session.execute(text("SELECT 1"))
+        with runtime.session_factory() as session:
+            session.execute(text("SELECT 1"))
     except Exception:
         return False
     return True

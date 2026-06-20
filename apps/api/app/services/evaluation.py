@@ -5,7 +5,7 @@ from app.repositories.evaluations import EvaluationRunRepository
 from app.schemas.debug import EvaluationRunResponse, QueryRequest
 from app.services.evaluation_thresholds import DEFAULT_EVALUATION_THRESHOLDS
 from app.services.rag import assistant
-from app.services.retrieval import DatabaseRetriever, get_retriever
+from app.services.retrieval import DatabaseRetriever, InMemoryRetriever
 
 
 class GoldenCase(TypedDict):
@@ -43,7 +43,7 @@ GOLDEN_CASES: list[GoldenCase] = [
 ]
 
 
-def run_evaluation() -> EvaluationRunResponse:
+def run_evaluation(retriever: DatabaseRetriever | InMemoryRetriever) -> EvaluationRunResponse:
     scores: list[float] = []
     latencies: list[int] = []
     failures: list[str] = []
@@ -54,7 +54,7 @@ def run_evaluation() -> EvaluationRunResponse:
     weak_evidence_cases = sum(1 for case in GOLDEN_CASES if case["scenario"] == "weak_evidence")
     no_evidence_cases = sum(1 for case in GOLDEN_CASES if case["scenario"] == "no_evidence")
     for case in GOLDEN_CASES:
-        response = assistant.answer(QueryRequest(question=case["question"]))
+        response = assistant.answer(QueryRequest(question=case["question"]), retriever)
         evidence_surface = " ".join(
             [
                 *(citation.title.lower() for citation in response.citations),
@@ -85,17 +85,19 @@ def run_evaluation() -> EvaluationRunResponse:
     citation_presence_rate = round(citation_passes / len(GOLDEN_CASES), 2)
     mean_retrieval_score = round(sum(scores) / len(scores), 2)
     mean_latency_ms = round(mean(latencies), 2)
-    weak_evidence_warning_rate = round(weak_evidence_warnings / weak_evidence_cases, 2)
-    no_evidence_warning_rate = round(no_evidence_warnings / no_evidence_cases, 2)
+    weak_evidence_case_warning_rate = round(weak_evidence_warnings / weak_evidence_cases, 2)
+    no_evidence_case_warning_rate = round(no_evidence_warnings / no_evidence_cases, 2)
     thresholds = {
         "min_mean_retrieval_score": DEFAULT_EVALUATION_THRESHOLDS.min_mean_retrieval_score,
         "min_groundedness_pass_rate": DEFAULT_EVALUATION_THRESHOLDS.min_groundedness_pass_rate,
         "min_citation_presence_rate": DEFAULT_EVALUATION_THRESHOLDS.min_citation_presence_rate,
         "max_mean_latency_ms": DEFAULT_EVALUATION_THRESHOLDS.max_mean_latency_ms,
-        "min_weak_evidence_warning_rate": (
-            DEFAULT_EVALUATION_THRESHOLDS.min_weak_evidence_warning_rate
+        "min_weak_evidence_case_warning_rate": (
+            DEFAULT_EVALUATION_THRESHOLDS.min_weak_evidence_case_warning_rate
         ),
-        "min_no_evidence_warning_rate": DEFAULT_EVALUATION_THRESHOLDS.min_no_evidence_warning_rate,
+        "min_no_evidence_case_warning_rate": (
+            DEFAULT_EVALUATION_THRESHOLDS.min_no_evidence_case_warning_rate
+        ),
     }
 
     if groundedness_pass_rate < DEFAULT_EVALUATION_THRESHOLDS.min_groundedness_pass_rate:
@@ -114,20 +116,20 @@ def run_evaluation() -> EvaluationRunResponse:
             f"{DEFAULT_EVALUATION_THRESHOLDS.max_mean_latency_ms}ms."
         )
     if (
-        weak_evidence_warning_rate
-        < DEFAULT_EVALUATION_THRESHOLDS.min_weak_evidence_warning_rate
+        weak_evidence_case_warning_rate
+        < DEFAULT_EVALUATION_THRESHOLDS.min_weak_evidence_case_warning_rate
     ):
         failures.append(
-            "Weak-evidence warning rate fell below "
-            f"{DEFAULT_EVALUATION_THRESHOLDS.min_weak_evidence_warning_rate:.2f}."
+            "Weak-evidence case warning rate fell below "
+            f"{DEFAULT_EVALUATION_THRESHOLDS.min_weak_evidence_case_warning_rate:.2f}."
         )
     if (
-        no_evidence_warning_rate
-        < DEFAULT_EVALUATION_THRESHOLDS.min_no_evidence_warning_rate
+        no_evidence_case_warning_rate
+        < DEFAULT_EVALUATION_THRESHOLDS.min_no_evidence_case_warning_rate
     ):
         failures.append(
-            "No-evidence warning rate fell below "
-            f"{DEFAULT_EVALUATION_THRESHOLDS.min_no_evidence_warning_rate:.2f}."
+            "No-evidence case warning rate fell below "
+            f"{DEFAULT_EVALUATION_THRESHOLDS.min_no_evidence_case_warning_rate:.2f}."
         )
 
     evaluation_response = EvaluationRunResponse(
@@ -136,13 +138,12 @@ def run_evaluation() -> EvaluationRunResponse:
         groundedness_pass_rate=groundedness_pass_rate,
         citation_presence_rate=citation_presence_rate,
         mean_latency_ms=mean_latency_ms,
-        weak_evidence_warning_rate=weak_evidence_warning_rate,
-        no_evidence_warning_rate=no_evidence_warning_rate,
+        weak_evidence_case_warning_rate=weak_evidence_case_warning_rate,
+        no_evidence_case_warning_rate=no_evidence_case_warning_rate,
         failures=failures,
         passed=not failures,
         thresholds=thresholds,
     )
-    retriever = get_retriever()
     if isinstance(retriever, DatabaseRetriever):
         EvaluationRunRepository(retriever.session).add(
             suite_name="golden_local_v1",
@@ -151,8 +152,10 @@ def run_evaluation() -> EvaluationRunResponse:
             groundedness_pass_rate=evaluation_response.groundedness_pass_rate,
             citation_presence_rate=evaluation_response.citation_presence_rate,
             mean_latency_ms=evaluation_response.mean_latency_ms,
-            weak_evidence_warning_rate=evaluation_response.weak_evidence_warning_rate,
-            no_evidence_warning_rate=evaluation_response.no_evidence_warning_rate,
+            weak_evidence_case_warning_rate=(
+                evaluation_response.weak_evidence_case_warning_rate
+            ),
+            no_evidence_case_warning_rate=evaluation_response.no_evidence_case_warning_rate,
             passed=evaluation_response.passed,
             thresholds=evaluation_response.thresholds,
             failures=evaluation_response.failures,

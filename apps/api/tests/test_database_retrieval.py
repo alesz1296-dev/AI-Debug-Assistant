@@ -1,6 +1,7 @@
 from app.db.init_db import initialize_database
+from app.db.types import vector_literal
 from app.repositories.retrieval_traces import RetrievalTraceRepository
-from app.services.retrieval import DatabaseRetriever, _vector_literal
+from app.services.retrieval import DatabaseRetriever
 from app.services.seed_records import seed_knowledge_records
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
@@ -45,4 +46,4 @@ def test_database_retriever_persists_trace_hits() -> None:
 
 
 def test_vector_literal_matches_pgvector_input_format() -> None:
-    assert _vector_literal([0.1, -0.2, 0.0]) == "[0.1,-0.2,0.0]"
+    assert vector_literal([0.1, -0.2, 0.0]) == "[0.1,-0.2,0.0]"

@@ -5,6 +5,7 @@ from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
 from app.db.models import KnowledgeRecordRow, RecordEmbeddingRow
+from app.db.types import vector_literal
 from app.models.records import KnowledgeRecord
 from app.repositories.embeddings import RecordEmbeddingRepository
 from app.repositories.records import KnowledgeRecordRepository, row_to_record
@@ -162,13 +163,13 @@ class DatabaseRetriever:
                     kr.text,
                     kr.tags,
                     kr.metadata,
-                    1 - (re.vector::text::vector <=> CAST(:query_vector AS vector)) AS score
+                    1 - (re.vector <=> CAST(:query_vector AS vector)) AS score
                 FROM knowledge_records kr
                 JOIN record_embeddings re ON re.record_id = kr.id
                 WHERE kr.collection = ANY(:collections)
                   AND re.provider = :provider
                   AND re.model = :model
-                ORDER BY re.vector::text::vector <=> CAST(:query_vector AS vector)
+                ORDER BY re.vector <=> CAST(:query_vector AS vector)
                 LIMIT :top_k
                 """
             ),
@@ -176,7 +177,7 @@ class DatabaseRetriever:
                 "collections": collections,
                 "provider": self.embedding_model.provider,
                 "model": self.embedding_model.model,
-                "query_vector": _vector_literal(query_vector),
+                "query_vector": vector_literal(query_vector),
                 "top_k": top_k,
             },
         ).mappings()
@@ -210,10 +211,6 @@ def citations_for(hits: list[RetrievalHit]) -> list[Citation]:
     ]
 
 
-def _vector_literal(vector: list[float]) -> str:
-    return "[" + ",".join(str(value) for value in vector) + "]"
-
-
 def _snippet(text: str, max_chars: int = 240) -> str:
     clean = " ".join(text.split())
     if len(clean) <= max_chars:
@@ -221,14 +218,4 @@ def _snippet(text: str, max_chars: int = 240) -> str:
     return f"{clean[: max_chars - 3]}..."
 
 
-_ACTIVE_RETRIEVER: InMemoryRetriever | DatabaseRetriever = InMemoryRetriever()
-
-
-def get_retriever() -> InMemoryRetriever | DatabaseRetriever:
-    return _ACTIVE_RETRIEVER
-
-
-def set_retriever(new_retriever: InMemoryRetriever | DatabaseRetriever) -> None:
-    global _ACTIVE_RETRIEVER
-    _ACTIVE_RETRIEVER = new_retriever
 

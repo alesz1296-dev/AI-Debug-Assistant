@@ -8,8 +8,8 @@ Evaluation starts deterministic and local. It becomes a CI quality gate in Phase
 - Groundedness pass rate: answer includes at least one citation.
 - Citation presence rate: cases that returned at least one citation.
 - Mean latency: measured in the query response.
-- Weak-evidence warning rate: weak-evidence cases that triggered the expected warning.
-- No-evidence warning rate: no-evidence cases that triggered the expected warning.
+- Weak-evidence case warning rate: weak-evidence cases that triggered the expected warning.
+- No-evidence case warning rate: no-evidence cases that triggered the expected warning.
 - Failure list: cases that need better data, prompts, or retrieval.
 
 ## Current Thresholds
@@ -20,8 +20,8 @@ Phase 4 defines these initial numeric thresholds:
 - minimum groundedness pass rate: `1.00`
 - minimum citation presence rate: `1.00`
 - maximum mean latency: `250 ms`
-- minimum weak-evidence warning rate: `1.00`
-- minimum no-evidence warning rate: `1.00`
+- minimum weak-evidence case warning rate: `1.00`
+- minimum no-evidence case warning rate: `1.00`
 
 These thresholds are intentionally strict at the start so the suite stays honest. They are surfaced in the evaluation response and enforced by the evaluation gate.
 
@@ -31,8 +31,8 @@ The evaluation response now also includes:
 
 - `citation_presence_rate`
 - `mean_latency_ms`
-- `weak_evidence_warning_rate`
-- `no_evidence_warning_rate`
+- `weak_evidence_case_warning_rate`
+- `no_evidence_case_warning_rate`
 - `thresholds`
 - `passed`
 

@@ -112,11 +112,11 @@ def test_evaluation_runs_with_api_key(client: TestClient) -> None:
     assert body["groundedness_pass_rate"] > 0
     assert body["citation_presence_rate"] > 0
     assert body["mean_latency_ms"] >= 0
-    assert body["weak_evidence_warning_rate"] >= 0
-    assert body["no_evidence_warning_rate"] >= 0
+    assert body["weak_evidence_case_warning_rate"] >= 0
+    assert body["no_evidence_case_warning_rate"] >= 0
     assert "passed" in body
     assert body["thresholds"]["min_mean_retrieval_score"] == 0.67
-    assert "min_no_evidence_warning_rate" in body["thresholds"]
+    assert "min_no_evidence_case_warning_rate" in body["thresholds"]
 
 
 def test_debug_case_round_trips_from_durable_storage(

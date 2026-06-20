@@ -8,6 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import JSON
 
 from app.db.base import Base
+from app.db.types import VectorType
 
 
 def _uuid() -> str:
@@ -67,7 +68,7 @@ class RecordEmbeddingRow(Base):
     provider: Mapped[str] = mapped_column(String(64), nullable=False)
     model: Mapped[str] = mapped_column(String(128), nullable=False)
     dimensions: Mapped[int] = mapped_column(Integer, nullable=False)
-    vector: Mapped[list[float]] = mapped_column(_json_type(), nullable=False)
+    vector: Mapped[list[float]] = mapped_column(VectorType(128), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
@@ -135,8 +136,16 @@ class EvaluationRunRow(Base):
     groundedness_pass_rate: Mapped[float] = mapped_column(Float, nullable=False)
     citation_presence_rate: Mapped[float] = mapped_column(Float, nullable=False)
     mean_latency_ms: Mapped[float] = mapped_column(Float, nullable=False)
-    weak_evidence_warning_rate: Mapped[float] = mapped_column(Float, nullable=False)
-    no_evidence_warning_rate: Mapped[float] = mapped_column(Float, nullable=False)
+    weak_evidence_case_warning_rate: Mapped[float] = mapped_column(
+        "weak_evidence_warning_rate",
+        Float,
+        nullable=False,
+    )
+    no_evidence_case_warning_rate: Mapped[float] = mapped_column(
+        "no_evidence_warning_rate",
+        Float,
+        nullable=False,
+    )
     passed: Mapped[bool] = mapped_column(nullable=False)
     thresholds: Mapped[dict[str, float | int]] = mapped_column(_json_type(), nullable=False)
     failures: Mapped[list[str]] = mapped_column(_json_type(), nullable=False, default=list)

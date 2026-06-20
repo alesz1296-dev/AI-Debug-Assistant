@@ -2,6 +2,8 @@
 
 ## Local MVP Demo
 
+Use `docs/manual-testing.md` to track manual endpoint and platform validation while running the demo.
+
 1. Explain the data policy: no confidential company data.
 2. Show the three retrieval collections.
 3. Run the health endpoint.

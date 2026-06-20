@@ -28,6 +28,5 @@ def test_runtime_uses_sqlite_fallback_only_when_enabled() -> None:
         assert runtime.backend_name == "sqlite_fallback"
     finally:
         if runtime is not None:
-            runtime.session.close()
             runtime.engine.dispose()
         settings.allow_sqlite_fallback = original

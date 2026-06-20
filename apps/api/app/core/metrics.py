@@ -72,8 +72,8 @@ class MetricsRegistry:
     def record_evaluation(
         self,
         passed: bool,
-        weak_evidence_warning_rate: float,
-        no_evidence_warning_rate: float,
+        weak_evidence_case_warning_rate: float,
+        no_evidence_case_warning_rate: float,
     ) -> None:
         with self._lock:
             self.evaluation_runs_total += 1
@@ -81,9 +81,9 @@ class MetricsRegistry:
                 self.evaluation_runs_passed_total += 1
             else:
                 self.evaluation_runs_failed_total += 1
-            if weak_evidence_warning_rate > 0:
+            if weak_evidence_case_warning_rate > 0:
                 self.evaluation_weak_evidence_warning_total += 1
-            if no_evidence_warning_rate > 0:
+            if no_evidence_case_warning_rate > 0:
                 self.evaluation_no_evidence_warning_total += 1
 
     def render_prometheus(self) -> str:

@@ -10,7 +10,6 @@ from app.core.config import settings
 from app.core.logging import bind_log_context, configure_logging, get_logger, reset_log_context
 from app.core.metrics import metrics_registry
 from app.core.runtime import build_runtime
-from app.services.retrieval import set_retriever
 
 configure_logging(settings.log_level)
 logger = get_logger(__name__, component="api")
@@ -20,7 +19,6 @@ REQUEST_ID_HEADER = "X-Request-ID"
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     runtime = build_runtime()
-    set_retriever(runtime.retriever)
     app.state.runtime = runtime
     logger.info(
         "runtime.started",
@@ -32,7 +30,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         yield
     finally:
         logger.info("runtime.stopped", backend=runtime.backend_name)
-        runtime.session.close()
         runtime.engine.dispose()
 
 

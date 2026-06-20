@@ -191,7 +191,13 @@ def _process_ingestion_record(
     logger.info("ingestion.job.started", kind=kind, record_id=str(record_id))
     try:
         record = build_record()
-        saved = _get_worker_retriever().add(record)
+        override = _WORKER_RETRIEVER_OVERRIDE
+        if override is not None:
+            saved = override.add(record)
+        else:
+            runtime = get_worker_runtime()
+            with runtime.session_factory() as session:
+                saved = DatabaseRetriever(session).add(record)
     except Exception:
         metrics_registry.record_ingestion_job_processed(kind=kind, status="failed")
         logger.exception("ingestion.job.failed", kind=kind, record_id=str(record_id))
@@ -199,12 +205,6 @@ def _process_ingestion_record(
     metrics_registry.record_ingestion_job_processed(kind=kind, status="succeeded")
     logger.info("ingestion.job.succeeded", kind=kind, record_id=str(saved.id))
     return str(saved.id)
-
-
-def _get_worker_retriever() -> DatabaseRetriever | InMemoryRetriever:
-    if _WORKER_RETRIEVER_OVERRIDE is not None:
-        return _WORKER_RETRIEVER_OVERRIDE
-    return get_worker_runtime().retriever
 
 
 def _job_kind_from_payload(kind: Any) -> Literal["document", "log", "debug_case"] | None:

@@ -134,7 +134,7 @@ CI now validates the Python and container delivery path in sequence:
 
 ## Current CI Coverage
 
-The current GitHub Actions workflow now satisfies the Phase 6 CI target.
+The current GitHub Actions workflow satisfies the Phase 7 local-platform validation target.
 
 Present in CI today:
 
@@ -143,13 +143,7 @@ Present in CI today:
 - `mypy apps/api/app apps/api/tests`
 - `pytest -q`
 - sequential `docker compose -f infra/docker-compose.yml build api`
-
-Not yet present in CI:
-
-- compose runtime startup validation
-- migration execution validation inside CI
-
-Those runtime checks remain part of local validation evidence rather than the current GitHub Actions pipeline, which is enough to close Phase 6 without claiming full cloud readiness.
+- `scripts/ci_compose_smoke.py`, which builds the API image, starts Postgres and Redis, waits for Postgres readiness, applies Alembic migrations, starts the API, validates `/health`, `/ready`, `/metrics`, `/query`, and `/evaluations/run`, processes a Redis/RQ ingestion job with a burst worker, validates API logs, validates worker success logs, and tears down the isolated smoke stack.
 
 ## Phase 7 Validation Status
 

@@ -80,8 +80,8 @@ class EvaluationRunResponse(BaseModel):
     groundedness_pass_rate: float
     citation_presence_rate: float
     mean_latency_ms: float
-    weak_evidence_warning_rate: float
-    no_evidence_warning_rate: float
+    weak_evidence_case_warning_rate: float
+    no_evidence_case_warning_rate: float
     failures: list[str]
     passed: bool
     thresholds: dict[str, float | int]

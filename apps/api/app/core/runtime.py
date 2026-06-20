@@ -10,32 +10,35 @@ from app.core.config import settings
 from app.core.logging import get_logger
 from app.db.bootstrap import apply_migrations
 from app.db.init_db import initialize_database
-from app.services.retrieval import DatabaseRetriever, InMemoryRetriever
 from app.services.seed_records import seed_knowledge_records
 
 
 @dataclass
 class AppRuntime:
     engine: Engine
-    session: Session
-    retriever: DatabaseRetriever | InMemoryRetriever
+    session_factory: sessionmaker[Session]
     backend_name: str
 
 
 def build_runtime(database_url: str | None = None, seed: bool = True) -> AppRuntime:
     url = database_url or settings.database_url
     engine, fallback_used = _build_engine(url)
-    session = sessionmaker(bind=engine, autoflush=False, autocommit=False, expire_on_commit=False)()
+    session_factory = sessionmaker(
+        bind=engine,
+        autoflush=False,
+        autocommit=False,
+        expire_on_commit=False,
+    )
     if engine.dialect.name == "postgresql":
         apply_migrations(url)
     else:
         initialize_database(engine)
     if seed:
-        seed_knowledge_records(session)
+        with session_factory() as session:
+            seed_knowledge_records(session)
     return AppRuntime(
         engine=engine,
-        session=session,
-        retriever=DatabaseRetriever(session),
+        session_factory=session_factory,
         backend_name=_backend_name(engine, fallback_used),
     )
 
