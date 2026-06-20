@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ai-debug-migrations
+  namespace: ai-debug
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: ai-debug-migrations
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: alembic
+          image: ai-debug-assistant-api:local
+          imagePullPolicy: IfNotPresent
+          command:
+            - alembic
+            - -c
+            - alembic.ini
+            - upgrade
+            - head
+          envFrom:
+            - configMapRef:
+                name: ai-debug-config
+            - secretRef:
+                name: ai-debug-secrets

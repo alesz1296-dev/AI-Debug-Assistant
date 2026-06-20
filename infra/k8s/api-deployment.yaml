@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-debug-api
+  namespace: ai-debug
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ai-debug-api
+  template:
+    metadata:
+      labels:
+        app: ai-debug-api
+    spec:
+      containers:
+        - name: api
+          image: ai-debug-assistant-api:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: ai-debug-config
+            - secretRef:
+                name: ai-debug-secrets
+          readinessProbe:
+            httpGet:
+              path: /api/v1/ready
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3

@@ -25,5 +25,11 @@ spec:
               value: debug
             - name: POSTGRES_DB
               value: debug_assistant
-          # TODO: add a volume for persistent local cluster storage.
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
           # TODO: add readiness and liveness probes after the first deployment works.
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-data

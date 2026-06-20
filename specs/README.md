@@ -12,7 +12,9 @@ The project must not claim deployment readiness, DevOps readiness, or cloud read
 
 Phase 7 - DevOps-ready milestone is complete.
 
-Next implementation phase: Phase 8 - local Kubernetes first, then AWS EKS, Terraform, and cloud deployment planning.
+Phase 8 is now in progress with Stage 8A completed: local Kubernetes foundation, Helm packaging, and automated `kind` smoke validation.
+
+Next implementation focus: Stage 8B, the AWS EKS, Terraform, and cloud deployment planning layer.
 
 ## End Goal
 

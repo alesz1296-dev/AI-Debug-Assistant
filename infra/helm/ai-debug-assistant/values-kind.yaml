@@ -1,0 +1,35 @@
+fullnameOverride: ai-debug
+
+image:
+  repository: ai-debug-assistant-api
+  tag: local
+  pullPolicy: IfNotPresent
+
+appConfig:
+  appEnv: local-k8s
+
+auth:
+  apiKey: dev-local-key
+
+postgres:
+  enabled: true
+  image: pgvector/pgvector:pg16
+  user: debug
+  password: debug
+  database: debug_assistant
+  storageSize: 5Gi
+
+redis:
+  enabled: true
+  image: redis:7-alpine
+
+api:
+  replicaCount: 1
+  service:
+    port: 8000
+
+worker:
+  replicaCount: 1
+
+migration:
+  enabled: true

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-debug-api
+  namespace: ai-debug
+spec:
+  selector:
+    app: ai-debug-api
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000

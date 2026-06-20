@@ -5,28 +5,42 @@
 - [x] Register the chosen Phase 8 direction: `Local Kubernetes first, then AWS EKS + Terraform + Helm`.
 - [x] Choose local cluster runtime: `kind`.
 - [x] Define local Kubernetes runbook.
-- [ ] Define Helm chart structure.
-- [ ] Add Helm chart skeleton.
-- [ ] Add API Deployment template.
-- [ ] Add API Service template.
-- [ ] Add worker Deployment template.
-- [ ] Add Alembic migration Job template.
-- [ ] Add ConfigMap and Secret templates using safe local values.
-- [ ] Add readiness and liveness probes.
-- [ ] Add local Kubernetes values file.
-- [ ] Render Helm templates locally.
-- [ ] Deploy local Kubernetes stack.
-- [ ] Run migration Job locally.
-- [ ] Validate local Kubernetes `/health`.
-- [ ] Validate local Kubernetes `/ready`.
-- [ ] Validate local Kubernetes `/metrics`.
-- [ ] Validate local Kubernetes `/query`.
-- [ ] Validate local Kubernetes `/evaluations/run`.
-- [ ] Validate document ingestion and worker processing.
-- [ ] Validate API logs.
-- [ ] Validate worker logs.
-- [ ] Document failure drills for image pull, missing secret, database unavailable, Redis unavailable, migration failure, and readiness failure.
-- [ ] Add local Kubernetes smoke evidence.
+- [x] Create local `kind` cluster.
+- [x] Build the API image for local Kubernetes.
+- [x] Load the local API image into the `kind` cluster.
+- [x] Add Namespace manifest.
+- [x] Add ConfigMap template with safe local values.
+- [x] Add Secret template with safe local placeholders.
+- [x] Add PostgreSQL Deployment template.
+- [x] Add PostgreSQL Service template.
+- [x] Add PostgreSQL persistent volume claim template.
+- [x] Add Redis Deployment template.
+- [x] Add Redis Service template.
+- [x] Deploy local PostgreSQL and Redis foundation in Kubernetes.
+- [x] Validate PostgreSQL and Redis Pods reach `Running`.
+- [x] Add API Deployment template.
+- [x] Add API Service template.
+- [x] Add worker Deployment template.
+- [x] Add Alembic migration Job template.
+- [x] Wire API and worker environment from ConfigMap and Secret.
+- [x] Add readiness and liveness probes.
+- [x] Define Helm chart structure.
+- [x] Add Helm chart skeleton.
+- [x] Add local Kubernetes values file.
+- [x] Render Helm templates in CI validation.
+- [x] Deploy local Kubernetes stack.
+- [x] Run migration Job locally.
+- [x] Validate local Kubernetes `/health`.
+- [x] Validate local Kubernetes `/ready`.
+- [x] Validate local Kubernetes `/metrics`.
+- [x] Validate local Kubernetes `/query`.
+- [x] Validate local Kubernetes `/evaluations/run`.
+- [x] Validate document ingestion and worker processing.
+- [x] Validate API logs.
+- [x] Validate worker logs.
+- [x] Document at least one local Kubernetes failure drill with recovery behavior.
+- [x] Add local Kubernetes smoke evidence.
+- [x] Add automated `kind` Kubernetes smoke validation in CI.
 
 ## Stage 8B: AWS EKS Planning
 

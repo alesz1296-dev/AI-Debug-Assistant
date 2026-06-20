@@ -26,7 +26,7 @@ The project is governed by the phase map in `specs/README.md`.
 
 Current completed milestone: Phase 7 - DevOps-ready milestone and hardening.
 
-Next implementation phase: Phase 8 - local Kubernetes first, then AWS EKS, Terraform, Helm, and cloud deployment planning.
+Current implementation phase: Phase 8 - local Kubernetes first, then AWS EKS, Terraform, Helm, and cloud deployment planning.
 
 - Phase 0: Local MVP baseline.
 - Phase 1: SSD planning hardening.
@@ -40,6 +40,18 @@ Next implementation phase: Phase 8 - local Kubernetes first, then AWS EKS, Terra
 - Phase 9: optional dashboard.
 
 The Phase 8 local Kubernetes path starts with `kind`; see `docs/local-kubernetes-kind.md`.
+
+Current Phase 8 progress:
+
+- local `kind` cluster created and validated
+- local API image built and loaded into the cluster
+- Kubernetes foundation manifests created under `infra/k8s`
+- PostgreSQL and Redis deployed in the `ai-debug` namespace
+- PostgreSQL persistence added with a PVC template
+- local Kubernetes runtime validation completed with API, worker, logs, metrics, auth, ingestion, and a Redis readiness failure drill
+- Helm chart added under `infra/helm/ai-debug-assistant`
+- automated `kind` smoke validation added to CI for the Helm-installed stack
+- Stage 8A is complete; next focus is AWS EKS planning in Stage 8B
 
 ## What It Demonstrates
 
@@ -146,6 +158,7 @@ Present in CI today:
 - `pytest -q`
 - sequential `docker compose -f infra/docker-compose.yml build api`
 - `scripts/ci_compose_smoke.py`, which builds the API image, starts Postgres and Redis, waits for Postgres readiness, applies Alembic migrations, starts the API, validates `/health`, `/ready`, `/metrics`, `/query`, and `/evaluations/run`, processes a Redis/RQ ingestion job with a burst worker, validates API logs, validates worker success logs, and tears down the isolated smoke stack.
+- `scripts/ci_k8s_smoke.py`, which builds the API image, creates a fresh `kind` cluster, renders and installs the Helm chart, waits for PostgreSQL, Redis, API, worker, and migration readiness, validates `/health`, `/ready`, `/metrics`, `/query`, `/evaluations/run`, checks protected-route auth failure, validates ingestion completion, validates API logs, validates worker logs, and deletes the cluster.
 
 ## Phase 7 Validation Status
 

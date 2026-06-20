@@ -26,6 +26,23 @@ Target runtime:
 - ingress: local port-forward first, ingress later only if useful
 - dependencies: local Postgres and Redis/Valkey inside the cluster or explicitly wired external dependencies
 
+Current local Kubernetes progress:
+
+- `kind` is installed as a local workstation tool.
+- the local cluster `ai-debug-local` has been created and validated with `kubectl cluster-info` and `kubectl get nodes`
+- the API image has been built locally and loaded into the cluster with `kind load docker-image`
+- raw manifests now exist under `infra/k8s` for namespace, config, secrets, PostgreSQL, Redis, and PostgreSQL persistent storage
+- PostgreSQL and Redis were applied in the `ai-debug` namespace and reached a healthy running state
+- a Helm chart now exists under `infra/helm/ai-debug-assistant`
+- a dedicated `values-kind.yaml` file now packages the validated local Kubernetes shape
+- CI now renders the Helm chart, installs it into a fresh `kind` cluster, and runs a Kubernetes smoke test against the Helm-installed stack
+
+Why this matters:
+
+- we have already proven the dependency layer before adding the application layer
+- this reduces debugging scope because API and worker rollout can focus on commands, probes, and app wiring instead of basic cluster networking
+- it mirrors real platform work, where infrastructure primitives are usually stabilized before app workloads are layered on top
+
 Required local Kubernetes proof:
 
 - API pod starts from the project image.
@@ -70,6 +87,7 @@ Helm structure:
 infra/helm/ai-debug-assistant/
   Chart.yaml
   values.yaml
+  values-kind.yaml
   templates/
     api-deployment.yaml
     api-service.yaml
@@ -77,6 +95,11 @@ infra/helm/ai-debug-assistant/
     migration-job.yaml
     configmap.yaml
     secret.yaml
+    postgres-deployment.yaml
+    postgres-service.yaml
+    postgres-pvc.yaml
+    redis-deployment.yaml
+    redis-service.yaml
 ```
 
 ## Stage 8C: AWS Deployment Workflow
@@ -117,5 +140,6 @@ Deployment flow:
 
 - Local Kubernetes smoke test passes before AWS implementation starts.
 - Helm templates render in CI.
+- the Helm-installed stack passes automated `kind` smoke validation in CI.
 - Terraform validates and plans before any apply.
 - AWS smoke test passes only after EKS deployment exists.

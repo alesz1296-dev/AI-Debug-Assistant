@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-debug-worker
+  namespace: ai-debug
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ai-debug-worker
+  template:
+    metadata:
+      labels:
+        app: ai-debug-worker
+    spec:
+      containers:
+        - name: worker
+          image: ai-debug-assistant-api:local
+          imagePullPolicy: IfNotPresent
+          command:
+            - python
+            - -m
+            - app.workers.ingestion
+          envFrom:
+            - configMapRef:
+                name: ai-debug-config
+            - secretRef:
+                name: ai-debug-secrets
