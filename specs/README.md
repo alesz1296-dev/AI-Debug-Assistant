@@ -12,7 +12,7 @@ The project must not claim deployment readiness, DevOps readiness, or cloud read
 
 Phase 7 - DevOps-ready milestone is complete.
 
-Next implementation phase: Phase 8 - AWS, Kubernetes, Terraform, and cloud deployment planning.
+Next implementation phase: Phase 8 - local Kubernetes first, then AWS EKS, Terraform, and cloud deployment planning.
 
 ## End Goal
 
@@ -28,7 +28,7 @@ Build a deployable, observable AI debugging assistant that ingests public/synthe
 6. `phase-5-observability`: logs, metrics, traces, health, and readiness.
 7. `phase-6-container-ci-validation`: container and CI validation.
 8. `phase-7-devops-ready-milestone`: platform maturity milestone before cloud work.
-9. `phase-8-cloud-aws-kubernetes-terraform`: AWS, Kubernetes, Terraform, and deployment workflows.
+9. `phase-8-cloud-aws-kubernetes-terraform`: local Kubernetes, AWS EKS, Terraform, Helm, and deployment workflows.
 10. `phase-9-dashboard-optional`: optional portfolio dashboard.
 
 ## Working Rule

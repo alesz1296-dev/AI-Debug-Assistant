@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: ai-debug
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: pgvector/pgvector:pg16
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: debug
+            - name: POSTGRES_PASSWORD
+              value: debug
+            - name: POSTGRES_DB
+              value: debug_assistant
+          # TODO: add a volume for persistent local cluster storage.
+          # TODO: add readiness and liveness probes after the first deployment works.

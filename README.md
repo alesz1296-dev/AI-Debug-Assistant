@@ -26,7 +26,7 @@ The project is governed by the phase map in `specs/README.md`.
 
 Current completed milestone: Phase 7 - DevOps-ready milestone and hardening.
 
-Next implementation phase: Phase 8 - AWS, Kubernetes, Terraform, and cloud deployment planning.
+Next implementation phase: Phase 8 - local Kubernetes first, then AWS EKS, Terraform, Helm, and cloud deployment planning.
 
 - Phase 0: Local MVP baseline.
 - Phase 1: SSD planning hardening.
@@ -36,8 +36,10 @@ Next implementation phase: Phase 8 - AWS, Kubernetes, Terraform, and cloud deplo
 - Phase 5: observability.
 - Phase 6: container and CI validation.
 - Phase 7: DevOps-ready milestone and hardening.
-- Phase 8: AWS, Kubernetes, Terraform, and cloud deployment.
+- Phase 8: local Kubernetes, AWS EKS, Terraform, Helm, and cloud deployment.
 - Phase 9: optional dashboard.
+
+The Phase 8 local Kubernetes path starts with `kind`; see `docs/local-kubernetes-kind.md`.
 
 ## What It Demonstrates
 

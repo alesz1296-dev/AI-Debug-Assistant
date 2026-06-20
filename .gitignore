@@ -16,4 +16,7 @@ htmlcov/
 logs.md
 *.local.md
 data/runtime/
+docs/local-kubernetes-kind.md
+docs/learning-retrospective.md
+docs/local-kubernetes-kind.md
 uploads/
