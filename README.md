@@ -68,6 +68,11 @@ Current Phase 8 progress:
 
 Public SSD docs are tracked in git. Private learning notes, coaching notes, scratch plans, and manual-development logs belong in ignored folders such as `.learning/`, `.planning/`, or `.private-notes/`.
 
+For Stage 8B and later:
+
+- tracked docs should capture project-facing architecture, tasks, validation, and operational runbooks
+- personal study notes, learning checkpoints, and coaching notes should remain private and untracked
+
 ## Deferred Frameworks
 
 LangChain and LangGraph are intentionally not part of the current stack. They may be added later only if we have a concrete workflow that benefits from a higher-level orchestration or tool abstraction layer.

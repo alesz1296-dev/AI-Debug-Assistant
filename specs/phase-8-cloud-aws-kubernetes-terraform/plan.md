@@ -67,11 +67,46 @@ Target AWS architecture:
 - infrastructure as code: Terraform
 - deployment packaging: Helm
 
+Stage 8B operating mode:
+
+- the project owner performs the implementation work
+- Codex acts as teacher, architectural guide, reviewer, and debugging partner
+- Stage 8B should front-load explanation and decision-making before any AWS mutation work begins
+- tracked docs capture project-facing truth only
+- personal learning notes stay in ignored private directories such as `.learning/`, `.planning/`, or `.private-notes/`
+
+Locked Stage 8B defaults:
+
+- learning path: managed-first
+- environment scope: implement `dev` first, scaffold `staging`
+- cost posture: tight lab budget
+- Terraform state: remote state from the start
+- Kubernetes-on-AWS add-ons: core add-ons only
+- dev access pattern: public ALB
+- secrets pattern: AWS Secrets Manager plus External Secrets Operator
+- managed data strategy: RDS PostgreSQL plus ElastiCache Redis or Valkey
+
+Stage 8B decision topics:
+
+- AWS region and naming convention
+- tagging standard
+- VPC topology and subnet strategy
+- EKS cluster and managed node group shape
+- RDS design and pgvector enablement approach
+- ElastiCache/Valkey design
+- IRSA and controller IAM strategy
+- Secrets Manager and External Secrets integration
+- CloudWatch log and metrics visibility plan
+- teardown and cost-control workflow
+
 Terraform foundation structure:
 
 ```text
 infra/aws/
+  bootstrap/
+    state/
   envs/dev/
+  envs/staging/
   modules/network/
   modules/ecr/
   modules/eks/
@@ -79,6 +114,7 @@ infra/aws/
   modules/elasticache/
   modules/iam/
   modules/observability/
+  modules/secrets/
 ```
 
 Helm structure:
@@ -115,6 +151,23 @@ Deployment flow:
 7. Validate health, readiness, query, evaluation, ingestion, worker logs, and metrics.
 8. Document teardown.
 
+Stage 8C implementation order:
+
+1. backend and remote state bootstrap
+2. network module
+3. ECR module
+4. EKS module
+5. IAM and IRSA foundations
+6. AWS Load Balancer Controller
+7. RDS module
+8. ElastiCache module
+9. secrets integration
+10. observability module
+11. AWS Helm values
+12. ECR image publishing workflow
+13. EKS deploy and smoke workflow
+14. teardown validation
+
 ## Safety Rules
 
 - No automatic `terraform apply`.
@@ -135,11 +188,14 @@ Deployment flow:
 - ECR image publishing plan.
 - EKS deployment and smoke-test plan.
 - Teardown and cost-control runbook.
+- AWS validation checklist.
+- project-facing AWS architecture runbook.
 
 ## Validation
 
 - Local Kubernetes smoke test passes before AWS implementation starts.
 - Helm templates render in CI.
 - the Helm-installed stack passes automated `kind` smoke validation in CI.
+- Stage 8B is decision-complete before any Terraform implementation starts.
 - Terraform validates and plans before any apply.
 - AWS smoke test passes only after EKS deployment exists.

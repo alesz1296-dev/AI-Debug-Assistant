@@ -6,6 +6,8 @@ Promote the DevOps-ready Compose platform into a Kubernetes-first platform path.
 
 After the local Kubernetes gate passes, the same workload can move to AWS EKS through Terraform-managed infrastructure.
 
+Stage 8B is also the transition point from agent-led implementation into owner-led implementation. From this stage forward, the project owner should perform as much of the hands-on Terraform and AWS work as possible for learning depth, with Codex acting as teacher, architectural guide, reviewer, and debugging partner.
+
 ## Requirements
 
 - Build a local Kubernetes deployment path before AWS work starts.
@@ -21,12 +23,16 @@ After the local Kubernetes gate passes, the same workload can move to AWS EKS th
 - Add Kubernetes/AWS secrets handling without committing secrets.
 - Add logs and metrics validation for local Kubernetes and AWS EKS.
 - Document manual smoke tests, debugging commands, failure modes, and teardown.
+- Keep tracked documentation limited to project-facing architecture, tasks, validation, and operational runbooks.
+- Keep all personal learning notes, coaching notes, study prompts, and reflections in ignored private directories only.
+- Define Stage 8B decisions before Stage 8C implementation starts.
 
 ## Acceptance Criteria
 
 - Local Kubernetes can deploy the API, worker, and migration job from the same container image.
 - Local Kubernetes smoke tests prove health, readiness, query, evaluation, ingestion enqueue, worker processing, metrics, and logs.
 - Kubernetes manifests or Helm templates are reproducible and reviewed before AWS deployment.
+- Stage 8B documents the AWS target architecture, Terraform structure, secrets approach, validation workflow, and teardown workflow clearly enough that Stage 8C can be executed without further architecture decisions.
 - Terraform plans the AWS EKS foundation without manual console setup.
 - AWS deployment workflow is documented and repeatable.
 - Secrets are not stored in git.
@@ -41,3 +47,4 @@ After the local Kubernetes gate passes, the same workload can move to AWS EKS th
 - Automatic production deployment.
 - Dashboard unless Phase 9 is started.
 - LangChain or LangGraph adoption unless a future spec justifies it.
+- Committing personal study notes or coaching notes into tracked project documentation.

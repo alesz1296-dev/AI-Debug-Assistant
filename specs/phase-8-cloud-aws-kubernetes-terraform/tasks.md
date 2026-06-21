@@ -44,8 +44,12 @@
 
 ## Stage 8B: AWS EKS Planning
 
+- [ ] Record Stage 8B owner-led implementation mode and private-learning-doc boundary.
+- [ ] Document managed-first AWS architecture defaults for Stage 8B.
 - [ ] Define AWS region and naming convention.
+- [ ] Define tagging standard.
 - [ ] Define cost guardrails.
+- [ ] Define remote Terraform state bootstrap approach.
 - [ ] Define Terraform root structure under `infra/aws`.
 - [ ] Define ECR image publishing workflow.
 - [ ] Define EKS cluster and managed node group plan.
@@ -58,6 +62,9 @@
 - [ ] Define CloudWatch logs and Container Insights plan.
 - [ ] Define AWS smoke test checklist.
 - [ ] Define teardown runbook.
+- [ ] Add project-facing AWS architecture runbook in `docs/`.
+- [ ] Add project-facing AWS validation checklist in `docs/`.
+- [ ] Add project-facing AWS teardown and cost-control runbook in `docs/`.
 
 ## Stage 8C: AWS EKS Implementation
 
