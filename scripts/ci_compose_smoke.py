@@ -15,13 +15,15 @@ COMPOSE_FILE = ROOT / "infra" / "docker-compose.yml"
 COMPOSE_PROJECT = os.environ.get("COMPOSE_SMOKE_PROJECT", "ai-debug-assistant-smoke")
 BASE_URL = "http://127.0.0.1:8000/api/v1"
 API_KEY = "dev-local-key"
+RETRY_ATTEMPTS = 3
+RETRY_DELAY_SECONDS = 15
 
 
 def main() -> int:
     worker_output = ""
     try:
         compose("down", "--volumes", "--remove-orphans", check=False)
-        compose("build", "api")
+        compose_retry("build", "api")
         compose("up", "-d", "postgres", "redis")
         wait_for_postgres()
         compose("run", "--rm", "-T", "api", "alembic", "-c", "alembic.ini", "upgrade", "head")
@@ -58,6 +60,25 @@ def compose(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
         stdout=None,
         stderr=None,
     )
+
+
+def compose_retry(*args: str) -> subprocess.CompletedProcess[str]:
+    last_error: subprocess.CalledProcessError | None = None
+    for attempt in range(1, RETRY_ATTEMPTS + 1):
+        try:
+            return compose(*args)
+        except subprocess.CalledProcessError as exc:
+            last_error = exc
+            if attempt == RETRY_ATTEMPTS:
+                break
+            print(
+                f"compose command failed on attempt {attempt}/{RETRY_ATTEMPTS}; "
+                f"retrying in {RETRY_DELAY_SECONDS}s",
+                flush=True,
+            )
+            time.sleep(RETRY_DELAY_SECONDS)
+    assert last_error is not None
+    raise last_error
 
 
 def wait_for_health() -> None:

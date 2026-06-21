@@ -20,15 +20,36 @@ CLUSTER_NAME = os.environ.get("K8S_SMOKE_CLUSTER", "ai-debug-ci")
 RELEASE_NAME = os.environ.get("K8S_SMOKE_RELEASE", "ai-debug-assistant")
 NAMESPACE = os.environ.get("K8S_SMOKE_NAMESPACE", "ai-debug")
 FULLNAME = os.environ.get("K8S_SMOKE_FULLNAME", "ai-debug")
+RETRY_ATTEMPTS = 3
+RETRY_DELAY_SECONDS = 15
 
 
 def main() -> int:
     port_forward: subprocess.Popen[str] | None = None
     try:
         kind("delete", "cluster", "--name", CLUSTER_NAME, check=False)
-        kind("create", "cluster", "--name", CLUSTER_NAME)
-        run("docker", "build", "-f", "infra/Dockerfile.api", "-t", IMAGE_REF, ".", cwd=ROOT)
-        kind("load", "docker-image", IMAGE_REF, "--name", CLUSTER_NAME)
+        retry_command("kind create cluster", kind, "create", "cluster", "--name", CLUSTER_NAME)
+        retry_command(
+            "docker build api image",
+            run,
+            "docker",
+            "build",
+            "-f",
+            "infra/Dockerfile.api",
+            "-t",
+            IMAGE_REF,
+            ".",
+            cwd=ROOT,
+        )
+        retry_command(
+            "kind load docker image",
+            kind,
+            "load",
+            "docker-image",
+            IMAGE_REF,
+            "--name",
+            CLUSTER_NAME,
+        )
         helm(
             "template",
             RELEASE_NAME,
@@ -91,6 +112,30 @@ def run(*args: str, cwd: Path = ROOT, check: bool = True) -> subprocess.Complete
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
     )
+
+
+def retry_command(
+    label: str,
+    runner: Any,
+    *args: str,
+    **kwargs: Any,
+) -> subprocess.CompletedProcess[str]:
+    last_error: subprocess.CalledProcessError | None = None
+    for attempt in range(1, RETRY_ATTEMPTS + 1):
+        try:
+            return cast(subprocess.CompletedProcess[str], runner(*args, **kwargs))
+        except subprocess.CalledProcessError as exc:
+            last_error = exc
+            if attempt == RETRY_ATTEMPTS:
+                break
+            print(
+                f"{label} failed on attempt {attempt}/{RETRY_ATTEMPTS}; "
+                f"retrying in {RETRY_DELAY_SECONDS}s",
+                flush=True,
+            )
+            time.sleep(RETRY_DELAY_SECONDS)
+    assert last_error is not None
+    raise last_error
 
 
 def kind(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
