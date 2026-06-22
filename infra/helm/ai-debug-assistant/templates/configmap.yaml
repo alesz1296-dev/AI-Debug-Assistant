@@ -8,6 +8,7 @@ metadata:
 data:
   APP_NAME: {{ .Values.appConfig.appName | quote }}
   APP_ENV: {{ .Values.appConfig.appEnv | quote }}
+  RUN_DB_MIGRATIONS: {{ .Values.appConfig.runDbMigrations | quote }}
   LOG_LEVEL: {{ .Values.appConfig.logLevel | quote }}
   ALLOW_SQLITE_FALLBACK: {{ .Values.appConfig.allowSqliteFallback | quote }}
   EMBEDDING_PROVIDER: {{ .Values.appConfig.embeddingProvider | quote }}

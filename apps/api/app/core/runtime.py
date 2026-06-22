@@ -30,7 +30,8 @@ def build_runtime(database_url: str | None = None, seed: bool = True) -> AppRunt
         expire_on_commit=False,
     )
     if engine.dialect.name == "postgresql":
-        apply_migrations(url)
+        if settings.run_db_migrations:
+            apply_migrations(url)
     else:
         initialize_database(engine)
     if seed:

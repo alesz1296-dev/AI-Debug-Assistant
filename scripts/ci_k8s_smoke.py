@@ -363,8 +363,11 @@ def dump_diagnostics() -> None:
     for command in [
         ["kubectl", "get", "all,pvc", "-n", NAMESPACE],
         ["kubectl", "get", "pods", "-n", NAMESPACE, "-o", "wide"],
+        ["kubectl", "get", "jobs", "-n", NAMESPACE],
+        ["kubectl", "describe", "jobs", "-n", NAMESPACE],
         ["kubectl", "logs", f"deployment/{FULLNAME}-api", "-n", NAMESPACE],
         ["kubectl", "logs", f"deployment/{FULLNAME}-worker", "-n", NAMESPACE],
+        ["kubectl", "logs", "-n", NAMESPACE, "-l", "app.kubernetes.io/component=migration", "--tail=-1"],
     ]:
         try:
             completed = subprocess.run(

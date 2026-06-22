@@ -9,6 +9,7 @@ image:
 appConfig:
   appName: Enterprise AI Debug Assistant
   appEnv: local-k8s
+  runDbMigrations: "false"
   logLevel: INFO
   allowSqliteFallback: "false"
   embeddingProvider: local
