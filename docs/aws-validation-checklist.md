@@ -4,13 +4,17 @@ This checklist is the project-facing validation target for the future AWS enviro
 
 ## Terraform Validation
 
+- [ ] bootstrap state creates the S3 backend bucket successfully.
+- [ ] bootstrap state creates the DynamoDB lock table successfully.
 - [ ] `terraform validate` passes for the selected environment.
 - [ ] `terraform plan` succeeds without manual console-only prerequisites.
 - [ ] remote state backend is reachable and behaves as expected.
+- [ ] environment roots use the intended remote backend for `dev`, `staging`, or `prod`.
 
 ## Infrastructure Validation
 
 - [ ] VPC, subnets, routing, and security groups are created as planned.
+- [ ] multi-AZ subnet layout matches the intended `us-east-1` design.
 - [ ] ECR repository exists and accepts image push.
 - [ ] EKS cluster is reachable with `kubectl`.
 - [ ] managed node group reaches healthy ready state.
@@ -37,6 +41,7 @@ This checklist is the project-facing validation target for the future AWS enviro
 
 - [ ] application logs are visible in CloudWatch.
 - [ ] cluster and workload signals are visible at the planned observability layer.
+- [ ] Kubernetes workloads receive AWS access through the intended IRSA pattern.
 - [ ] secrets are sourced from AWS-managed secret storage and not committed in git.
 - [ ] protected routes still require the expected API key behavior.
 

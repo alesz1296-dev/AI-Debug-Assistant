@@ -12,19 +12,25 @@ This document records the project-facing AWS target architecture for Phase 8B an
 
 - implementation style: owner-led, with guided review and debugging
 - learning path: managed-first
+- AWS region: `us-east-1`
+- naming convention: `ai-debug-assistant-ada-<env>-<resource>`
+- environment ladder: `local`, `dev`, `staging`, `prod`
 - first implemented environment: `dev`
-- scaffolded later environment: `staging`
+- scaffolded later environments: `staging` and `prod`
 - cost posture: tight lab budget
 - state strategy: remote Terraform state from the start
 - app exposure in `dev`: public ALB
 - secrets strategy: AWS Secrets Manager plus External Secrets Operator
 - data services: RDS PostgreSQL plus ElastiCache Redis or Valkey
+- Terraform structure: reusable modules under `infra/aws/modules` with environment roots under `infra/aws/envs`
 
 ## Target AWS Platform
 
 The target AWS platform should use:
 
 - VPC with public and private subnets across multiple availability zones
+- S3 bucket for Terraform remote state
+- DynamoDB table for Terraform state locking
 - ECR for API image storage
 - EKS with managed node groups for API, worker, and migration workloads
 - RDS PostgreSQL for the relational and vector-backed data store
@@ -39,6 +45,7 @@ The target AWS platform should use:
 
 Terraform owns:
 
+- Terraform backend bootstrap resources
 - AWS infrastructure
 - networking
 - ECR
@@ -59,6 +66,35 @@ Helm owns:
 - Services
 - probes
 - image tag and runtime value injection
+
+## Terraform Layout
+
+The current Terraform scaffold is:
+
+```text
+infra/aws/
+  bootstrap/
+    state/
+  envs/
+    dev/
+    staging/
+    prod/
+  modules/
+    network/
+    ecr/
+    eks/
+    iam/
+    rds/
+    elasticache/
+    secrets/
+    observability/
+```
+
+This structure expresses three boundaries:
+
+- `bootstrap/state` creates the shared Terraform backend foundation.
+- `envs/*` are root modules with separate state and environment-specific values.
+- `modules/*` are reusable building blocks that stay environment-agnostic.
 
 ## Implementation Order
 
@@ -83,8 +119,6 @@ The intended implementation order is:
 
 The following still require explicit tracked decisions before implementation:
 
-- AWS region
-- naming convention
 - tagging standard
 - VPC topology details
 - managed node group sizing

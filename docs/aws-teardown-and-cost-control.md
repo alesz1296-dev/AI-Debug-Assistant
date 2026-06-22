@@ -7,7 +7,7 @@ This runbook defines the project-facing expectations for cost control and teardo
 The default AWS posture for this project is a tight lab budget:
 
 - smallest viable `dev` environment first
-- `staging` scaffolded in structure, not necessarily provisioned immediately
+- `staging` and `prod` scaffolded in structure, not necessarily provisioned immediately
 - managed services chosen for production alignment, but sized conservatively
 - no unnecessary always-on components before the core stack is validated
 
@@ -29,6 +29,7 @@ Special attention should be given to:
 - ElastiCache node sizing
 - ALB runtime cost
 - CloudWatch log volume and retention
+- remote state bucket retention and versioning behavior
 
 ## Teardown Expectations
 
@@ -36,6 +37,7 @@ Before Stage 8C is considered complete, the project should define and later vali
 
 - how to destroy the `dev` environment safely
 - how to preserve or intentionally remove remote state
+- how to keep `staging` and `prod` isolated with separate state and explicit approval
 - how to clean up ECR artifacts when appropriate
 - how to confirm that RDS, ElastiCache, ALB, and cluster resources are no longer billing
 - how to capture final evidence before destructive teardown

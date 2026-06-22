@@ -1,4 +1,4 @@
-# Phase 8 Spec: Local Kubernetes to AWS EKS Platform
+# Phase 8 Spec: Local Kubernetes to AWS EKS Platform (ADA)
 
 ## Goal
 
@@ -6,17 +6,21 @@ Promote the DevOps-ready Compose platform into a Kubernetes-first platform path.
 
 After the local Kubernetes gate passes, the same workload can move to AWS EKS through Terraform-managed infrastructure.
 
-Stage 8B is also the transition point from agent-led implementation into owner-led implementation. From this stage forward, the project owner should perform as much of the hands-on Terraform and AWS work as possible for learning depth, with Codex acting as teacher, architectural guide, reviewer, and debugging partner.
+Stage 8B (ADA) is also the transition point from agent-led implementation into owner-led implementation. From this stage forward, the project owner should perform as much of the hands-on Terraform and AWS work as possible, with Codex acting as teacher, architectural guide, reviewer, and debugging partner.
 
 ## Requirements
 
 - Build a local Kubernetes deployment path before AWS work starts.
+- Use a four-environment ladder: `local`, `dev`, `staging`, and `prod`.
+- Keep `local` as the Kind/Compose learning and validation lab.
+- Use `dev` as the first AWS environment, `staging` as the production rehearsal space, and `prod` as the final live environment.
 - Package the API and worker with Helm or Kubernetes manifests.
 - Represent Alembic migrations as an explicit Kubernetes Job.
 - Configure API readiness and liveness probes against `/api/v1/ready` and `/api/v1/health`.
 - Run the API and worker as separate Kubernetes workloads.
 - Keep Postgres and Redis dependencies explicit for local Kubernetes validation.
 - Define AWS EKS infrastructure as a later Phase 8 stage using Terraform.
+- Design Terraform around reusable modules rather than a single flat stack.
 - Use ECR for image publishing before EKS deployment.
 - Use RDS PostgreSQL with pgvector for the AWS database target.
 - Use ElastiCache Redis or Valkey for the AWS queue/cache target.
@@ -32,6 +36,8 @@ Stage 8B is also the transition point from agent-led implementation into owner-l
 - Local Kubernetes can deploy the API, worker, and migration job from the same container image.
 - Local Kubernetes smoke tests prove health, readiness, query, evaluation, ingestion enqueue, worker processing, metrics, and logs.
 - Kubernetes manifests or Helm templates are reproducible and reviewed before AWS deployment.
+- The environment strategy clearly distinguishes `local`, `dev`, `staging`, and `prod`.
+- Terraform module boundaries are documented so AWS infrastructure can be built and reused cleanly across environments.
 - Stage 8B documents the AWS target architecture, Terraform structure, secrets approach, validation workflow, and teardown workflow clearly enough that Stage 8C can be executed without further architecture decisions.
 - Terraform plans the AWS EKS foundation without manual console setup.
 - AWS deployment workflow is documented and repeatable.

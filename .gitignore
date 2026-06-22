@@ -18,3 +18,6 @@ logs.md
 data/runtime/
 docs/learning-retrospective.md
 uploads/
+.terraform/
+*.tfstate
+*.tfstate.*
