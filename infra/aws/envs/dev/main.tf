@@ -22,3 +22,16 @@ module "network" {
   public_subnet_cidrs  = var.public_subnet_cidrs
   private_subnet_cidrs = var.private_subnet_cidrs
 }
+
+module "ecr" {
+  source = "../../modules/ecr"
+
+  project_name         = var.project_name
+  app_name             = var.app_name
+  environment          = var.environment
+  repository_suffix    = "api"
+  image_tag_mutability = "MUTABLE" #Change to INMUTABLE in prod/staging
+  scan_on_push         = true
+  lifecycle_keep_count = 10
+  tags                 = local.common_tags
+}
