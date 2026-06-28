@@ -67,3 +67,43 @@ variable "private_subnet_cidrs" {
     error_message = "private_subnet_cidrs must contain exactly 2 values for dev."
   }
 }
+
+variable "cluster_version" {
+  description = "Kubernetes version for the dev EKS cluster."
+  type        = string
+}
+
+variable "node_desired_size" {
+  description = "Desired number of worker nodes in dev."
+  type        = number
+}
+
+variable "node_min_size" {
+  description = "Minimum number of worker nodes in dev."
+  type        = number
+}
+
+variable "node_max_size" {
+  description = "Maximum number of worker nodes in dev."
+  type        = number
+}
+
+variable "cluster_suffix" {
+  description = "Suffix used to build the dev EKS cluster name."
+  type        = string
+}
+
+variable "authentication_mode" {
+  description = "Authentication mode for the dev EKS cluster."
+  type        = string
+}
+
+variable "node_group_suffix" {
+  description = "Suffix used to build the dev managed node group name."
+  type        = string
+}
+
+variable "node_instance_types" {
+  description = "EC2 instance types used by the dev managed node group."
+  type        = list(string)
+}

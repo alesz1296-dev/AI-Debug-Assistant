@@ -44,31 +44,31 @@
 
 ## Stage 8B: AWS EKS Planning
 
-- [ ] Record Stage 8B owner-led implementation mode and private-learning-doc boundary.
-- [ ] Document managed-first AWS architecture defaults for Stage 8B.
-- [ ] Define AWS region and naming convention.
-- [ ] Define tagging standard.
-- [ ] Define cost guardrails.
-- [ ] Define remote Terraform state bootstrap approach.
-- [ ] Define Terraform root structure under `infra/aws`.
+- [x] Record Stage 8B owner-led implementation mode and private-learning-doc boundary.
+- [x] Document managed-first AWS architecture defaults for Stage 8B.
+- [x] Define AWS region and naming convention.
+- [x] Define tagging standard.
+- [x] Define cost guardrails.
+- [x] Define remote Terraform state bootstrap approach.
+- [x] Define Terraform root structure under `infra/aws`.
 - [ ] Define ECR image publishing workflow.
-- [ ] Define EKS cluster and managed node group plan.
-- [ ] Define RDS PostgreSQL plan.
-- [ ] Define pgvector enablement plan.
-- [ ] Define ElastiCache Redis or Valkey plan.
-- [ ] Define IAM roles and service account strategy.
-- [ ] Define AWS Load Balancer Controller plan.
-- [ ] Define secrets strategy using AWS Secrets Manager or SSM Parameter Store.
-- [ ] Define CloudWatch logs and Container Insights plan.
-- [ ] Define AWS smoke test checklist.
-- [ ] Define teardown runbook.
-- [ ] Add project-facing AWS architecture runbook in `docs/`.
-- [ ] Add project-facing AWS validation checklist in `docs/`.
-- [ ] Add project-facing AWS teardown and cost-control runbook in `docs/`.
+- [x] Define EKS cluster and managed node group plan.
+- [x] Define RDS PostgreSQL plan.
+- [x] Define pgvector enablement plan.
+- [x] Define ElastiCache Redis or Valkey plan.
+- [x] Define IAM roles and service account strategy.
+- [x] Define AWS Load Balancer Controller plan.
+- [x] Define secrets strategy using AWS Secrets Manager or SSM Parameter Store.
+- [x] Define CloudWatch logs and Container Insights plan.
+- [x] Define AWS smoke test checklist.
+- [x] Define teardown runbook.
+- [x] Add project-facing AWS architecture runbook in `docs/`.
+- [x] Add project-facing AWS validation checklist in `docs/`.
+- [x] Add project-facing AWS teardown and cost-control runbook in `docs/`.
 
 ## Stage 8C: AWS EKS Implementation
 
-- [ ] Add Terraform network foundation.
+- [x] Add Terraform network foundation.
 - [ ] Add Terraform ECR module.
 - [ ] Add Terraform EKS module.
 - [ ] Add Terraform RDS module.

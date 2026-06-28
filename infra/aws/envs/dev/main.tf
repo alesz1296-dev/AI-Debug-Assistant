@@ -35,3 +35,24 @@ module "ecr" {
   lifecycle_keep_count = 10
   tags                 = local.common_tags
 }
+
+module "eks" {
+  source = "../../modules/eks"
+
+  project_name = var.project_name
+  app_name     = var.app_name
+  environment  = var.environment
+  tags         = local.common_tags
+
+  cluster_suffix      = var.cluster_suffix
+  cluster_version     = var.cluster_version
+  authentication_mode = var.authentication_mode
+
+  subnet_ids = module.network.private_subnet_ids
+
+  node_group_suffix   = var.node_group_suffix
+  node_instance_types = var.node_instance_types
+  node_desired_size   = var.node_desired_size
+  node_min_size       = var.node_min_size
+  node_max_size       = var.node_max_size
+}

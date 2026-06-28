@@ -6,7 +6,8 @@ This document records the project-facing AWS target architecture for Phase 8B an
 
 - Phase 8A local Kubernetes is complete.
 - Stage 8B is the current planning stage.
-- Stage 8C implementation must not start until the Stage 8B decisions in the tracked phase docs are complete.
+- Stage 8C implementation has started with Terraform bootstrap and the `dev` network foundation.
+- the next AWS implementation target is the ECR module.
 
 ## Locked Defaults
 
@@ -23,6 +24,7 @@ This document records the project-facing AWS target architecture for Phase 8B an
 - secrets strategy: AWS Secrets Manager plus External Secrets Operator
 - data services: RDS PostgreSQL plus ElastiCache Redis or Valkey
 - Terraform structure: reusable modules under `infra/aws/modules` with environment roots under `infra/aws/envs`
+- shared tagging baseline: `Project`, `App`, `Environment`, `ManagedBy`
 
 ## Target AWS Platform
 
@@ -96,6 +98,25 @@ This structure expresses three boundaries:
 - `envs/*` are root modules with separate state and environment-specific values.
 - `modules/*` are reusable building blocks that stay environment-agnostic.
 
+## Current AWS Implementation Evidence
+
+The current validated AWS implementation evidence is:
+
+- Terraform bootstrap state has been applied and verified.
+- `infra/aws/envs/dev` is wired to the remote backend and consumes reusable modules.
+- the `network` module has been applied successfully for `dev`.
+- the deployed `dev` network currently includes:
+  - VPC `ai-debug-assistant-ada-dev-vpc`
+  - public subnets `10.10.1.0/24` and `10.10.2.0/24`
+  - private subnets `10.10.11.0/24` and `10.10.12.0/24`
+  - subnet spread across `us-east-1a` and `us-east-1b`
+  - Internet Gateway `ai-debug-assistant-ada-dev-igw`
+  - NAT Gateway `ai-debug-assistant-ada-dev-nat`
+  - public route table default route to the Internet Gateway
+  - private route table default route to the NAT Gateway
+
+This is the first confirmed AWS environment layer for the project. The next module should build outward from this network foundation rather than bypass it with console-created resources.
+
 ## Implementation Order
 
 The intended implementation order is:
@@ -119,8 +140,6 @@ The intended implementation order is:
 
 The following still require explicit tracked decisions before implementation:
 
-- tagging standard
-- VPC topology details
 - managed node group sizing
 - RDS size and availability posture
 - ElastiCache engine and sizing details

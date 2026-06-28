@@ -1,6 +1,6 @@
 locals {
   name_prefix       = "${var.project_name}-${var.app_name}-${var.environment}"
-  state_bucket_name = "${local.name_prefix}-${var.state_bucket_suffix}"
+  state_bucket_name = "${local.name_prefix}-${var.state_bucket_suffix}-${random_string.bucket_suffix.result}"
   lock_table_name   = "${local.name_prefix}-${var.lock_table_suffix}"
 }
 
@@ -48,4 +48,10 @@ resource "aws_dynamodb_table" "terraform_lock" {
   }
 
   tags = var.tags
+}
+
+resource "random_string" "bucket_suffix" {
+  length  = 6
+  special = false
+  upper   = false
 }

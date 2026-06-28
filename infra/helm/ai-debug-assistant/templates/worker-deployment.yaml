@@ -24,6 +24,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
             - python
+          args:
             - -m
             - app.workers.ingestion
           env:

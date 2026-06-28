@@ -85,6 +85,7 @@ Locked Stage 8B defaults:
 - dev access pattern: public ALB
 - secrets pattern: AWS Secrets Manager plus External Secrets Operator
 - managed data strategy: RDS PostgreSQL plus ElastiCache Redis or Valkey
+- shared tagging baseline: `Project`, `App`, `Environment`, and `ManagedBy`
 
 Stage 8B decision topics:
 
@@ -167,6 +168,21 @@ Stage 8C implementation order:
 12. ECR image publishing workflow
 13. EKS deploy and smoke workflow
 14. teardown validation
+
+Current Stage 8C progress:
+
+- backend and remote state bootstrap have been applied and verified in AWS
+- the first reusable Terraform module, `modules/network`, has been consumed by `envs/dev`
+- the `dev` network has been applied and validated in `us-east-1`
+- validated evidence includes:
+  - VPC `ai-debug-assistant-ada-dev-vpc`
+  - two public subnets across `us-east-1a` and `us-east-1b`
+  - two private subnets across `us-east-1a` and `us-east-1b`
+  - attached Internet Gateway
+  - available NAT Gateway in the first public subnet
+  - public route table default route to the Internet Gateway
+  - private route table default route to the NAT Gateway
+- next implementation focus: `modules/ecr`
 
 ## Safety Rules
 
