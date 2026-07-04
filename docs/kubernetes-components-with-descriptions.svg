@@ -1,0 +1,165 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1050" viewBox="0 0 1600 1050" role="img" aria-labelledby="title desc">
+  <title id="title">Kubernetes Components With Brief Descriptions</title>
+  <desc id="desc">A visual diagram of Kubernetes control plane and worker node components with short descriptions.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f7fafc; }
+      .title { font: 800 54px Arial, Helvetica, sans-serif; fill: #111827; }
+      .subtitle { font: 400 24px Arial, Helvetica, sans-serif; fill: #4b5563; }
+      .section-title { font: 800 34px Arial, Helvetica, sans-serif; }
+      .label { font: 800 25px Arial, Helvetica, sans-serif; fill: #111827; }
+      .desc { font: 400 18px Arial, Helvetica, sans-serif; fill: #374151; }
+      .small { font: 700 16px Arial, Helvetica, sans-serif; fill: #374151; }
+      .arrow-label { font: 700 17px Arial, Helvetica, sans-serif; fill: #1f2937; }
+      .control { fill: #eff6ff; stroke: #2563eb; stroke-width: 4; }
+      .worker { fill: #ecfdf5; stroke: #0f766e; stroke-width: 4; }
+      .card { fill: #ffffff; stroke-width: 3; }
+      .blue-card { stroke: #2563eb; }
+      .amber-card { stroke: #d97706; }
+      .green-card { stroke: #16a34a; }
+      .purple-card { stroke: #7c3aed; }
+      .teal-card { stroke: #0f766e; }
+      .gray-card { stroke: #64748b; }
+      .icon-blue { fill: #2563eb; }
+      .icon-amber { fill: #d97706; }
+      .icon-green { fill: #16a34a; }
+      .icon-purple { fill: #7c3aed; }
+      .icon-teal { fill: #0f766e; }
+      .line { stroke: #111827; stroke-width: 4; fill: none; }
+      .line-soft { stroke: #64748b; stroke-width: 3; fill: none; stroke-dasharray: 8 8; }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#111827"/>
+    </marker>
+    <marker id="arrowSoft" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#64748b"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#0f172a" flood-opacity="0.13"/>
+    </filter>
+  </defs>
+
+  <rect class="bg" width="1600" height="1050"/>
+  <text class="title" x="800" y="78" text-anchor="middle">Kubernetes Components</text>
+  <text class="subtitle" x="800" y="116" text-anchor="middle">Who does what when Kubernetes turns desired state into running containers</text>
+
+  <rect class="control" x="40" y="160" width="710" height="800" rx="18"/>
+  <text class="section-title" x="395" y="216" text-anchor="middle" fill="#1d4ed8">Control Plane</text>
+
+  <rect class="worker" x="850" y="160" width="710" height="800" rx="18"/>
+  <text class="section-title" x="1205" y="216" text-anchor="middle" fill="#0f766e">Worker Node</text>
+
+  <!-- User -->
+  <rect class="card blue-card" x="75" y="285" width="160" height="130" rx="14" filter="url(#shadow)"/>
+  <circle class="icon-blue" cx="155" cy="326" r="23"/>
+  <path class="icon-blue" d="M108 384c8-30 86-30 94 0v10h-94z"/>
+  <text class="small" x="155" y="435" text-anchor="middle">User / kubectl</text>
+
+  <!-- API server -->
+  <rect class="card blue-card" x="305" y="245" width="365" height="190" rx="16" filter="url(#shadow)"/>
+  <rect class="icon-blue" x="382" y="284" width="190" height="30" rx="7"/>
+  <rect class="icon-blue" x="382" y="326" width="190" height="30" rx="7"/>
+  <rect class="icon-blue" x="382" y="368" width="190" height="30" rx="7"/>
+  <circle fill="#dbeafe" cx="592" cy="299" r="8"/>
+  <circle fill="#dbeafe" cx="592" cy="341" r="8"/>
+  <circle fill="#dbeafe" cx="592" cy="383" r="8"/>
+  <text class="label" x="488" y="475" text-anchor="middle">kube-apiserver</text>
+  <text class="desc" x="488" y="505" text-anchor="middle">Front door for all cluster requests.</text>
+
+  <!-- etcd -->
+  <rect class="card gray-card" x="320" y="575" width="210" height="180" rx="16" filter="url(#shadow)"/>
+  <ellipse cx="425" cy="620" rx="60" ry="24" fill="#bfdbfe" stroke="#2563eb" stroke-width="3"/>
+  <rect x="365" y="620" width="120" height="70" fill="#60a5fa" stroke="#2563eb" stroke-width="3"/>
+  <ellipse cx="425" cy="690" rx="60" ry="24" fill="#93c5fd" stroke="#2563eb" stroke-width="3"/>
+  <text class="label" x="425" y="735" text-anchor="middle">etcd</text>
+  <text class="desc" x="425" y="764" text-anchor="middle">Stores cluster state.</text>
+
+  <!-- Scheduler -->
+  <rect class="card amber-card" x="95" y="610" width="220" height="160" rx="16" filter="url(#shadow)"/>
+  <rect class="icon-amber" x="175" y="642" width="60" height="58" rx="7"/>
+  <rect fill="#fff7ed" x="185" y="660" width="12" height="12"/>
+  <rect fill="#fff7ed" x="207" y="660" width="12" height="12"/>
+  <rect fill="#fff7ed" x="185" y="682" width="12" height="12"/>
+  <rect fill="#fff7ed" x="207" y="682" width="12" height="12"/>
+  <text class="label" x="205" y="730" text-anchor="middle">kube-scheduler</text>
+  <text class="desc" x="205" y="758" text-anchor="middle">Chooses a node for new Pods.</text>
+
+  <!-- Controller manager -->
+  <rect class="card amber-card" x="540" y="610" width="190" height="160" rx="16" filter="url(#shadow)"/>
+  <circle class="icon-amber" cx="635" cy="674" r="34"/>
+  <circle fill="#fff7ed" cx="635" cy="674" r="14"/>
+  <text class="label" x="635" y="728" text-anchor="middle">controller-</text>
+  <text class="label" x="635" y="756" text-anchor="middle">manager</text>
+  <text class="desc" x="635" y="784" text-anchor="middle">Repairs drift from desired state.</text>
+
+  <!-- Worker node cards -->
+  <rect class="card teal-card" x="890" y="270" width="280" height="175" rx="16" filter="url(#shadow)"/>
+  <circle class="icon-blue" cx="935" cy="326" r="25"/>
+  <text class="label" x="1035" y="326" text-anchor="middle">kubelet</text>
+  <text class="desc" x="1035" y="360" text-anchor="middle">Node agent.</text>
+  <text class="desc" x="1035" y="386" text-anchor="middle">Starts and monitors Pods.</text>
+
+  <rect class="card blue-card" x="1240" y="270" width="255" height="175" rx="16" filter="url(#shadow)"/>
+  <path class="icon-blue" d="M1285 314l32-18 32 18-32 18z"/>
+  <path fill="#1d4ed8" d="M1285 318l30 17v39l-30-17z"/>
+  <path fill="#60a5fa" d="M1349 318l-30 17v39l30-17z"/>
+  <text class="label" x="1380" y="322" text-anchor="middle">container</text>
+  <text class="label" x="1380" y="352" text-anchor="middle">runtime</text>
+  <text class="desc" x="1368" y="386" text-anchor="middle">Actually runs containers.</text>
+
+  <rect class="card purple-card" x="890" y="520" width="280" height="175" rx="16" filter="url(#shadow)"/>
+  <circle class="icon-purple" cx="943" cy="565" r="10"/>
+  <circle class="icon-purple" cx="915" cy="598" r="10"/>
+  <circle class="icon-purple" cx="970" cy="628" r="10"/>
+  <path class="line-soft" d="M943 565 L915 598 L970 628"/>
+  <text class="label" x="1035" y="585" text-anchor="middle">Service</text>
+  <text class="desc" x="1035" y="620" text-anchor="middle">Stable IP/DNS for Pods.</text>
+
+  <rect class="card purple-card" x="1240" y="520" width="255" height="175" rx="16" filter="url(#shadow)"/>
+  <circle class="icon-purple" cx="1290" cy="565" r="10"/>
+  <circle class="icon-purple" cx="1262" cy="598" r="10"/>
+  <circle class="icon-purple" cx="1318" cy="628" r="10"/>
+  <path class="line-soft" d="M1290 565 L1262 598 L1318 628"/>
+  <text class="label" x="1380" y="585" text-anchor="middle">kube-proxy</text>
+  <text class="desc" x="1380" y="620" text-anchor="middle">Routes Service traffic.</text>
+
+  <rect class="card green-card" x="940" y="760" width="250" height="135" rx="16" filter="url(#shadow)"/>
+  <path class="icon-green" d="M985 805l28-16 28 16-28 16z"/>
+  <path fill="#15803d" d="M985 809l26 15v34l-26-15z"/>
+  <path fill="#86efac" d="M1041 809l-26 15v34l26-15z"/>
+  <text class="label" x="1083" y="815" text-anchor="middle">Pod</text>
+  <text class="desc" x="1065" y="850" text-anchor="middle">Smallest deployable unit.</text>
+
+  <rect class="card green-card" x="1250" y="760" width="250" height="135" rx="16" filter="url(#shadow)"/>
+  <path class="icon-green" d="M1295 805l28-16 28 16-28 16z"/>
+  <path fill="#15803d" d="M1295 809l26 15v34l-26-15z"/>
+  <path fill="#86efac" d="M1351 809l-26 15v34l26-15z"/>
+  <text class="label" x="1393" y="815" text-anchor="middle">Pod</text>
+  <text class="desc" x="1375" y="850" text-anchor="middle">Wraps app containers.</text>
+
+  <!-- Arrows -->
+  <path class="line" d="M235 350 L295 350" marker-end="url(#arrow)"/>
+  <text class="arrow-label" x="265" y="335" text-anchor="middle">request</text>
+
+  <path class="line" d="M488 435 L488 565" marker-end="url(#arrow)"/>
+  <path class="line" d="M458 565 L458 445" marker-end="url(#arrow)"/>
+  <text class="arrow-label" x="545" y="548">read / write</text>
+
+  <path class="line" d="M280 610 L405 445" marker-end="url(#arrow)"/>
+  <text class="arrow-label" x="250" y="565">chooses node</text>
+
+  <path class="line" d="M605 610 L550 445" marker-end="url(#arrow)"/>
+  <text class="arrow-label" x="615" y="548">desired state</text>
+
+  <path class="line" d="M670 340 C765 340 790 332 880 332" marker-end="url(#arrow)"/>
+  <text class="arrow-label" x="790" y="310" text-anchor="middle">assigned Pods</text>
+
+  <path class="line" d="M1170 332 L1230 332" marker-end="url(#arrow)"/>
+  <path class="line" d="M1170 608 L1230 608" marker-end="url(#arrow)"/>
+  <path class="line" d="M1368 445 C1368 500 1368 700 1080 758" marker-end="url(#arrow)"/>
+  <path class="line" d="M1368 695 C1368 720 1368 735 1375 752" marker-end="url(#arrow)"/>
+
+  <!-- Flow summary -->
+  <rect x="68" y="895" width="660" height="38" rx="19" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text class="small" x="398" y="920" text-anchor="middle">Control plane records decisions. Worker node runs the containers.</text>
+</svg>

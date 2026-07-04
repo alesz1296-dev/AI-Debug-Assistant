@@ -38,6 +38,8 @@ flowchart LR
 
 The target platform persists records and embeddings, uses pgvector retrieval, moves ingestion through workers, exposes observable runtime signals, and can later be deployed through CI/CD and AWS infrastructure. Queue failures are now treated as explicit service availability problems at the API boundary instead of implicit server errors.
 
+Phase 8 is currently building that AWS path through a cost-controlled Terraform model. The default `dev` AWS environment keeps only the low-cost baseline enabled, while EKS, NAT Gateway, RDS, ElastiCache, ALB, and richer cloud observability are enabled only for focused labs or later environment tiers.
+
 ## Phase 5 Observability Overview
 
 ```mermaid

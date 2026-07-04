@@ -15,7 +15,7 @@ This checklist is the project-facing validation target for the future AWS enviro
 
 - [x] VPC, subnets, routing, and security groups are created as planned.
 - [x] multi-AZ subnet layout matches the intended `us-east-1` design.
-- [ ] ECR repository exists and accepts image push.
+- [x] ECR repository exists and accepts image push.
 - [ ] default `dev` plan excludes EKS, NAT Gateway, RDS, ElastiCache, ALB, and Container Insights.
 - [ ] EKS cluster is reachable with `kubectl` during a short-lived EKS lab.
 - [ ] managed node group reaches healthy ready state during a short-lived EKS lab.
@@ -106,5 +106,13 @@ Validated in AWS `dev` so far:
 - `ai-debug-assistant-ada-dev-nat` was validated previously and is now optional for cost control
 - public route table default route points to the Internet Gateway
 - private route table default route points to the NAT Gateway only when NAT is enabled
-- ECR module is wired into `dev`; image push validation is still pending
+- ECR module is wired into `dev`
+- ECR repository `ai-debug-assistant-ada-dev-api` accepts image pushes
+- API image was built locally as `ai-debug-assistant-api:dev`
+- API image was tagged and pushed to ECR as `ai-debug-assistant-ada-dev-api:dev`
+- ECR image push evidence:
+  - image tag: `dev`
+  - image digest: `sha256:e6e9232239051487e3a81e65625dda90a1b2431c08bf79007d3e80d35256ce22`
+  - image size: `79869341`
+  - pushed at: `2026-07-04T15:26:53.353000-06:00`
 - EKS module is wired into `dev` behind `enable_eks`; short-lived lab validation and teardown proof are still pending

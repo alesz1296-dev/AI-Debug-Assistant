@@ -52,7 +52,7 @@
 - [x] Adjust Phase 8 to a cost-controlled AWS lab model.
 - [x] Define remote Terraform state bootstrap approach.
 - [x] Define Terraform root structure under `infra/aws`.
-- [ ] Define ECR image publishing workflow.
+- [x] Define ECR image publishing workflow.
 - [x] Define EKS cluster and managed node group plan.
 - [x] Define RDS PostgreSQL plan.
 - [x] Define pgvector enablement plan.
@@ -85,6 +85,7 @@
 - [ ] Add Terraform IAM module.
 - [ ] Add Terraform observability module behind `enable_container_insights`.
 - [ ] Add AWS Load Balancer Controller and ALB flow behind `enable_alb`.
+- [x] Validate manual API image build, tag, push, and ECR image lookup.
 - [ ] Add image build and ECR push workflow.
 - [ ] Deploy Helm chart to EKS.
 - [ ] Run Alembic migration Job against RDS.

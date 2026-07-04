@@ -12,13 +12,20 @@ The project must not claim deployment readiness, DevOps readiness, or cloud read
 
 Phase 7 - DevOps-ready milestone is complete.
 
-Phase 8 is now in progress with Stage 8A completed: local Kubernetes foundation, Helm packaging, and automated `kind` smoke validation.
+Phase 8 is now in progress with Stage 8A and Stage 8B completed.
 
-Next implementation focus: Stage 8B, the AWS EKS, Terraform, and cloud deployment planning layer.
+Current implementation focus: Stage 8C, the cost-controlled AWS implementation layer.
+
+Current Phase 8 status:
+
+- local Kubernetes foundation, Helm packaging, and automated `kind` smoke validation are complete
+- AWS architecture and Terraform planning are decision-complete
+- Terraform bootstrap, `dev` network, ECR, and EKS module wiring are in place
+- `dev` defaults to a low-cost baseline with EKS and NAT Gateway disabled unless explicitly enabled for focused labs
 
 ## End Goal
 
-Build a deployable, observable AI debugging assistant that ingests public/synthetic operational evidence, stores and retrieves it with PostgreSQL and pgvector, processes ingestion through workers, evaluates grounded triage quality, and can later be ported to AWS as a CI/CD and DevOps portfolio showcase.
+Build a deployable, observable AI debugging assistant that ingests public/synthetic operational evidence, stores and retrieves it with PostgreSQL and pgvector, processes ingestion through workers, evaluates grounded triage quality, and can be ported to AWS through a cost-controlled Terraform, Kubernetes, and DevOps workflow.
 
 ## Phase Order
 

@@ -192,6 +192,10 @@ Current Stage 8C progress:
 - the `dev` network has been applied and validated in `us-east-1`
 - the `dev` network has been adjusted so NAT Gateway is optional and disabled by default for cost control
 - `modules/ecr` has been added and consumed by `envs/dev`
+- manual ECR publishing has been validated:
+  - API image built locally as `ai-debug-assistant-api:dev`
+  - image pushed to ECR repository `ai-debug-assistant-ada-dev-api`
+  - ECR tag `dev` is visible in AWS with digest `sha256:e6e9232239051487e3a81e65625dda90a1b2431c08bf79007d3e80d35256ce22`
 - `modules/eks` has been added and consumed by `envs/dev` behind `enable_eks`
 - `dev` now defaults to a cheap baseline with EKS disabled unless a short-lived lab explicitly enables it
 - future billable-service toggles exist in `dev` and default to disabled:
