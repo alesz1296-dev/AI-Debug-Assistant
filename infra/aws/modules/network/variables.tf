@@ -70,3 +70,9 @@ variable "private_subnet_cidrs" {
     error_message = "private_subnet_cidrs must match the number of availability_zones."
   }
 }
+
+variable "enable_nat_gateway" {
+  description = "Whether to create a NAT Gateway, NAT EIP, and private default outbound route."
+  type        = bool
+  default     = false
+}

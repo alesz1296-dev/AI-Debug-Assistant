@@ -1,5 +1,5 @@
 locals {
-  name_prefix    = "${var.project_name}-${var.app_name}-${var.environment}"
+  name_prefix     = "${var.project_name}-${var.app_name}-${var.environment}"
   repository_name = "${local.name_prefix}-${var.repository_suffix}"
 }
 

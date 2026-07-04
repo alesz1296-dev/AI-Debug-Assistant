@@ -20,5 +20,5 @@ output "internet_gateway_id" {
 
 output "nat_gateway_id" {
   description = "ID of the NAT gateway used for private subnet outbound access."
-  value       = aws_nat_gateway.this.id
+  value       = try(aws_nat_gateway.this[0].id, null)
 }

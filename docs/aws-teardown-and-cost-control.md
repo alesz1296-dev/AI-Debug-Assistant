@@ -4,12 +4,14 @@ This runbook defines the project-facing expectations for cost control and teardo
 
 ## Cost Posture
 
-The default AWS posture for this project is a tight lab budget:
+The default AWS posture for this project is cost-controlled lab mode:
 
 - smallest viable `dev` environment first
 - `staging` and `prod` scaffolded in structure, not necessarily provisioned immediately
 - managed services chosen for production alignment, but sized conservatively
 - no unnecessary always-on components before the core stack is validated
+- EKS is not treated as free-tier because the managed control plane has its own hourly cost
+- expensive resources are disabled by default and enabled only for focused labs
 
 ## Cost Control Rules
 
@@ -18,12 +20,18 @@ The default AWS posture for this project is a tight lab budget:
 - no automatic `terraform destroy`
 - no production-like overprovisioning in the initial `dev` environment
 - no secret values committed to git
+- default `dev` should not create EKS, NAT Gateway, RDS, ElastiCache, ALB, or Container Insights
+- EKS labs should be short-lived unless intentionally kept running
+- failed applies must still be treated as potentially billable until AWS resources are verified gone
+- a failed EKS or node group apply may still leave billable control plane, networking, or EC2-adjacent resources behind
 
 ## Expected Cost-Sensitive Areas
 
 Special attention should be given to:
 
+- EKS control plane runtime
 - NAT-related networking cost
+- Elastic IPs, especially when detached or orphaned
 - managed node group sizing
 - RDS instance class and storage
 - ElastiCache node sizing
@@ -41,6 +49,50 @@ Before Stage 8C is considered complete, the project should define and later vali
 - how to clean up ECR artifacts when appropriate
 - how to confirm that RDS, ElastiCache, ALB, and cluster resources are no longer billing
 - how to capture final evidence before destructive teardown
+
+## EKS Lab Teardown Checklist
+
+Use this checklist immediately after a short-lived EKS lab:
+
+- [ ] capture the validation evidence needed for the lab
+- [ ] set `enable_eks = false` in the selected environment
+- [ ] run `terraform plan` and confirm EKS cluster, node group, and EKS IAM resources are planned for removal
+- [ ] run `terraform apply` only after reviewing the destroy portion of the plan
+- [ ] confirm the EKS cluster no longer exists in AWS
+- [ ] confirm the managed node group no longer exists
+- [ ] confirm no EKS-created EC2 instances remain running
+- [ ] confirm no load balancers were created or left behind
+- [ ] confirm no orphaned Elastic IPs remain
+- [ ] confirm NAT Gateway is disabled or intentionally retained
+
+## Cost-Controlled Dev Baseline
+
+The default `dev` Terraform posture should retain only the low-cost foundation:
+
+- remote state backend
+- VPC
+- public and private subnets
+- route tables
+- Internet Gateway
+- ECR repository
+
+The following must be explicitly enabled for a focused lab:
+
+- EKS
+- NAT Gateway
+- RDS
+- ElastiCache
+- ALB
+- CloudWatch Container Insights
+
+The corresponding `dev` toggles must default to `false`:
+
+- `enable_eks`
+- `enable_nat_gateway`
+- `enable_rds`
+- `enable_elasticache`
+- `enable_alb`
+- `enable_container_insights`
 
 ## Required Future Teardown Checklist
 

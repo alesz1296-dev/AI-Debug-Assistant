@@ -19,7 +19,9 @@ Stage 8B (ADA) is also the transition point from agent-led implementation into o
 - Configure API readiness and liveness probes against `/api/v1/ready` and `/api/v1/health`.
 - Run the API and worker as separate Kubernetes workloads.
 - Keep Postgres and Redis dependencies explicit for local Kubernetes validation.
-- Define AWS EKS infrastructure as a later Phase 8 stage using Terraform.
+- Define AWS infrastructure as a later Phase 8 stage using Terraform, with EKS treated as an opt-in lab target.
+- Keep AWS `dev` cost-controlled by default, with EKS and other billable services enabled only for focused labs.
+- Use three operating profiles: `local-full`, `aws-free-friendly`, and `aws-eks-lab`.
 - Design Terraform around reusable modules rather than a single flat stack.
 - Use ECR for image publishing before EKS deployment.
 - Use RDS PostgreSQL with pgvector for the AWS database target.
@@ -44,6 +46,8 @@ Stage 8B (ADA) is also the transition point from agent-led implementation into o
 - Secrets are not stored in git.
 - Operational demo proves health, readiness, logs, metrics, migrations, and worker processing after deployment.
 - Teardown and cost-control steps are documented before any AWS apply.
+- Default `dev` Terraform plans do not create EKS, NAT Gateway, RDS, ElastiCache, ALB, or Container Insights unless explicitly enabled for a lab.
+- EKS lab validation includes immediate teardown proof before the project moves to later AWS application deployment work.
 
 ## Out Of Scope
 

@@ -26,7 +26,7 @@ The project is governed by the phase map in `specs/README.md`.
 
 Current completed milestone: Phase 7 - DevOps-ready milestone and hardening.
 
-Current implementation phase: Phase 8 - local Kubernetes first, then AWS EKS, Terraform, Helm, and cloud deployment planning.
+Current implementation phase: Phase 8 - local Kubernetes first, then cost-controlled AWS Terraform, EKS labs, Helm, and cloud deployment workflow.
 
 - Phase 0: Local MVP baseline.
 - Phase 1: SSD planning hardening.
@@ -36,7 +36,7 @@ Current implementation phase: Phase 8 - local Kubernetes first, then AWS EKS, Te
 - Phase 5: observability.
 - Phase 6: container and CI validation.
 - Phase 7: DevOps-ready milestone and hardening.
-- Phase 8: local Kubernetes, AWS EKS, Terraform, Helm, and cloud deployment.
+- Phase 8: local Kubernetes, AWS Terraform, short-lived EKS labs, Helm, and cloud deployment.
 - Phase 9: optional dashboard.
 
 The Phase 8 local Kubernetes path starts with `kind`; see `docs/local-kubernetes-kind.md`.
@@ -51,7 +51,13 @@ Current Phase 8 progress:
 - local Kubernetes runtime validation completed with API, worker, logs, metrics, auth, ingestion, and a Redis readiness failure drill
 - Helm chart added under `infra/helm/ai-debug-assistant`
 - automated `kind` smoke validation added to CI for the Helm-installed stack
-- Stage 8A is complete; next focus is AWS EKS planning in Stage 8B
+- Stage 8A local Kubernetes is complete
+- Stage 8B AWS/Terraform planning is complete
+- Stage 8C AWS implementation is active with a cost-controlled `dev` baseline
+- Terraform bootstrap, `dev` network, ECR, and EKS module wiring are in place
+- EKS is disabled by default and used only for short-lived AWS-specific labs
+- NAT Gateway is disabled by default and enabled only when a lab requires private-subnet outbound access
+- RDS, ElastiCache, ALB, and Container Insights are planned as opt-in future labs, not default `dev` resources
 
 ## What It Demonstrates
 

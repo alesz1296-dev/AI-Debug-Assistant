@@ -28,13 +28,22 @@ tags = {
   Environment = "dev"
 }
 
+# Cost-controlled lab toggles
+enable_nat_gateway        = false
+enable_eks                = false
+enable_rds                = false
+enable_elasticache        = false
+enable_alb                = false
+enable_container_insights = false
+eks_subnet_tier           = "public"
+
 #EKS variables
 cluster_suffix      = "eks"
 authentication_mode = "API"
 node_group_suffix   = "general"
-node_instance_types = ["t3.medium"]
+node_instance_types = ["t3.micro"]
 
 cluster_version   = "1.35"
-node_desired_size = 2
+node_desired_size = 1
 node_min_size     = 1
-node_max_size     = 3
+node_max_size     = 1

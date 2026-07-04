@@ -37,7 +37,7 @@ variable "lock_table_suffix" {
 variable "tags" {
   description = "Common tags applied to bootstrap resources."
   type        = map(string)
-  default     = {
+  default = {
     Project     = "ai-debug-assistant"
     App         = "ada"
     Environment = "bootstrap"

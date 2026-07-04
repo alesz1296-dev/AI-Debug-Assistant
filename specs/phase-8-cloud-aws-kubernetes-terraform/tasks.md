@@ -49,6 +49,7 @@
 - [x] Define AWS region and naming convention.
 - [x] Define tagging standard.
 - [x] Define cost guardrails.
+- [x] Adjust Phase 8 to a cost-controlled AWS lab model.
 - [x] Define remote Terraform state bootstrap approach.
 - [x] Define Terraform root structure under `infra/aws`.
 - [ ] Define ECR image publishing workflow.
@@ -69,12 +70,21 @@
 ## Stage 8C: AWS EKS Implementation
 
 - [x] Add Terraform network foundation.
-- [ ] Add Terraform ECR module.
-- [ ] Add Terraform EKS module.
-- [ ] Add Terraform RDS module.
-- [ ] Add Terraform ElastiCache module.
+- [x] Add optional NAT Gateway control for the dev network baseline.
+- [x] Add Terraform ECR module.
+- [x] Add Terraform EKS module behind `enable_eks`.
+- [x] Add `eks_subnet_tier` control for public versus private EKS lab placement.
+- [x] Add future billable-service toggles for RDS, ElastiCache, ALB, and Container Insights.
+- [ ] Validate default `dev` plan excludes EKS, NAT Gateway, RDS, ElastiCache, ALB, and Container Insights.
+- [ ] If prior EKS or NAT resources exist in state, validate the cleanup plan destroys them.
+- [ ] Confirm free-tier-eligible EC2 instance type before any EKS lab apply.
+- [ ] Validate short-lived EKS lab creation with `enable_eks = true`.
+- [ ] Validate EKS teardown proof after the lab.
+- [ ] Add Terraform RDS module behind `enable_rds`.
+- [ ] Add Terraform ElastiCache module behind `enable_elasticache`.
 - [ ] Add Terraform IAM module.
-- [ ] Add Terraform observability module.
+- [ ] Add Terraform observability module behind `enable_container_insights`.
+- [ ] Add AWS Load Balancer Controller and ALB flow behind `enable_alb`.
 - [ ] Add image build and ECR push workflow.
 - [ ] Deploy Helm chart to EKS.
 - [ ] Run Alembic migration Job against RDS.

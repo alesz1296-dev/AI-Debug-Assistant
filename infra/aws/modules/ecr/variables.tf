@@ -37,8 +37,8 @@ variable "image_tag_mutability" {
   type        = string
 
   validation {
-  condition     = contains(["MUTABLE", "IMMUTABLE"], var.image_tag_mutability)
-  error_message = "image_tag_mutability must be either MUTABLE or IMMUTABLE."
+    condition     = contains(["MUTABLE", "IMMUTABLE"], var.image_tag_mutability)
+    error_message = "image_tag_mutability must be either MUTABLE or IMMUTABLE."
   }
 }
 
@@ -50,9 +50,9 @@ variable "scan_on_push" {
 variable "lifecycle_keep_count" {
   description = "Number of recent container images to retain before older images are expired by the repository lifecycle policy."
   type        = number
-  
+
   validation {
-  condition     = var.lifecycle_keep_count > 0
-  error_message = "lifecycle_keep_count must be greater than 0."
+    condition     = var.lifecycle_keep_count > 0
+    error_message = "lifecycle_keep_count must be greater than 0."
   }
 }

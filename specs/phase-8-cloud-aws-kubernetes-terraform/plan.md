@@ -79,13 +79,21 @@ Locked Stage 8B defaults:
 
 - learning path: managed-first
 - environment scope: implement `dev` first, scaffold `staging`
-- cost posture: tight lab budget
+- cost posture: cost-controlled lab mode
 - Terraform state: remote state from the start
 - Kubernetes-on-AWS add-ons: core add-ons only
 - dev access pattern: public ALB
 - secrets pattern: AWS Secrets Manager plus External Secrets Operator
 - managed data strategy: RDS PostgreSQL plus ElastiCache Redis or Valkey
 - shared tagging baseline: `Project`, `App`, `Environment`, and `ManagedBy`
+
+Cost-controlled lab model:
+
+- `dev` defaults to low-cost baseline infrastructure.
+- EKS is not treated as free-tier infrastructure because the managed control plane has its own hourly cost.
+- EKS labs must be short-lived unless intentionally kept running.
+- NAT Gateway, EKS, RDS, ElastiCache, ALB, and Container Insights are disabled by default in `dev` unless a focused lab requires them.
+- public-subnet EKS is allowed for short-lived `dev` learning labs as a cost tradeoff, but not as the staging or production target.
 
 Stage 8B decision topics:
 
@@ -139,7 +147,15 @@ infra/helm/ai-debug-assistant/
     redis-service.yaml
 ```
 
-## Stage 8C: AWS Deployment Workflow
+## Stage 8C: Cost-Controlled AWS Implementation
+
+Stage 8C no longer assumes an always-on AWS EKS platform. The default implementation path is a cost-controlled AWS lab model with three operating profiles:
+
+- `local-full`: Docker Compose, `kind`, Helm, local PostgreSQL, Redis, workers, and smoke tests.
+- `aws-free-friendly`: Terraform remote state, VPC, public and private subnets, route tables, Internet Gateway, and ECR.
+- `aws-eks-lab`: short-lived EKS validation only, explicitly enabled and immediately torn down after proof.
+
+EKS remains part of the architecture, but it is treated as a controlled lab target instead of default `dev` infrastructure.
 
 Deployment flow:
 
@@ -174,15 +190,24 @@ Current Stage 8C progress:
 - backend and remote state bootstrap have been applied and verified in AWS
 - the first reusable Terraform module, `modules/network`, has been consumed by `envs/dev`
 - the `dev` network has been applied and validated in `us-east-1`
+- the `dev` network has been adjusted so NAT Gateway is optional and disabled by default for cost control
+- `modules/ecr` has been added and consumed by `envs/dev`
+- `modules/eks` has been added and consumed by `envs/dev` behind `enable_eks`
+- `dev` now defaults to a cheap baseline with EKS disabled unless a short-lived lab explicitly enables it
+- future billable-service toggles exist in `dev` and default to disabled:
+  - `enable_rds = false`
+  - `enable_elasticache = false`
+  - `enable_alb = false`
+  - `enable_container_insights = false`
 - validated evidence includes:
   - VPC `ai-debug-assistant-ada-dev-vpc`
   - two public subnets across `us-east-1a` and `us-east-1b`
   - two private subnets across `us-east-1a` and `us-east-1b`
   - attached Internet Gateway
-  - available NAT Gateway in the first public subnet
+  - NAT Gateway was validated previously and is now optional for cost control
   - public route table default route to the Internet Gateway
-  - private route table default route to the NAT Gateway
-- next implementation focus: `modules/ecr`
+  - private route table default route to the NAT Gateway when NAT is enabled
+- next implementation focus: validate the `aws-free-friendly` baseline plan, clean up any earlier EKS/NAT state, and use EKS only as a short-lived lab
 
 ## Safety Rules
 
@@ -192,6 +217,9 @@ Current Stage 8C progress:
 - No AWS resource creation before teardown and cost notes exist.
 - Manual approval is required before mutating AWS infrastructure.
 - Prefer small, reviewable infrastructure increments.
+- Default `dev` must not create EKS, NAT Gateway, RDS, ElastiCache, ALB, or Container Insights.
+- EKS labs must include an immediate post-lab teardown verification step.
+- If a previous failed or partial apply left EKS or NAT resources in state, the next plan should be treated as a cleanup and cost-control review.
 
 ## First Outputs
 
