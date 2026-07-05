@@ -22,6 +22,9 @@ Current Phase 8 status:
 - AWS architecture and Terraform planning are decision-complete
 - Terraform bootstrap, `dev` network, ECR, and EKS module wiring are in place
 - `dev` defaults to a low-cost baseline with EKS and NAT Gateway disabled unless explicitly enabled for focused labs
+- default `dev` validates with no Terraform drift
+- API image publishing to ECR has been manually validated
+- a repeatable local ECR publishing helper now exists at `scripts/push-api-image-to-ecr.ps1`
 
 ## End Goal
 

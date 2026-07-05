@@ -196,6 +196,7 @@ Current Stage 8C progress:
   - API image built locally as `ai-debug-assistant-api:dev`
   - image pushed to ECR repository `ai-debug-assistant-ada-dev-api`
   - ECR tag `dev` is visible in AWS with digest `sha256:e6e9232239051487e3a81e65625dda90a1b2431c08bf79007d3e80d35256ce22`
+- `scripts/push-api-image-to-ecr.ps1` now captures the repeatable local image publishing flow
 - `modules/eks` has been added and consumed by `envs/dev` behind `enable_eks`
 - `dev` now defaults to a cheap baseline with EKS disabled unless a short-lived lab explicitly enables it
 - future billable-service toggles exist in `dev` and default to disabled:
@@ -204,6 +205,8 @@ Current Stage 8C progress:
   - `enable_alb = false`
   - `enable_container_insights = false`
 - validated evidence includes:
+  - `terraform validate` passes for `infra/aws/envs/dev`
+  - `terraform plan` reports no changes for the current `dev` baseline
   - VPC `ai-debug-assistant-ada-dev-vpc`
   - two public subnets across `us-east-1a` and `us-east-1b`
   - two private subnets across `us-east-1a` and `us-east-1b`
@@ -211,7 +214,8 @@ Current Stage 8C progress:
   - NAT Gateway was validated previously and is now optional for cost control
   - public route table default route to the Internet Gateway
   - private route table default route to the NAT Gateway when NAT is enabled
-- next implementation focus: validate the `aws-free-friendly` baseline plan, clean up any earlier EKS/NAT state, and use EKS only as a short-lived lab
+  - earlier EKS and NAT lab resources have been cleaned up
+- next implementation focus: validate the local ECR publishing script, then begin IAM and secrets module design
 
 ## Safety Rules
 

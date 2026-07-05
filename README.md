@@ -41,6 +41,14 @@ Current implementation phase: Phase 8 - local Kubernetes first, then cost-contro
 
 The Phase 8 local Kubernetes path starts with `kind`; see `docs/local-kubernetes-kind.md`.
 
+For AWS image publishing, use the local ECR helper from the repository root:
+
+```powershell
+.\scripts\push-api-image-to-ecr.ps1
+```
+
+The script uses AWS CLI identity and temporary ECR login tokens; it does not store AWS secrets in the repository.
+
 Current Phase 8 progress:
 
 - local `kind` cluster created and validated
@@ -58,6 +66,9 @@ Current Phase 8 progress:
 - EKS is disabled by default and used only for short-lived AWS-specific labs
 - NAT Gateway is disabled by default and enabled only when a lab requires private-subnet outbound access
 - RDS, ElastiCache, ALB, and Container Insights are planned as opt-in future labs, not default `dev` resources
+- default AWS `dev` has been validated with `terraform validate` and a no-change `terraform plan`
+- manual API image build, tag, push, and ECR lookup have been validated against the `dev` ECR repository
+- `scripts/push-api-image-to-ecr.ps1` now captures the repeatable local ECR publishing flow
 
 ## What It Demonstrates
 

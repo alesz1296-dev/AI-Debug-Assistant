@@ -9,6 +9,9 @@ This document records the project-facing AWS target architecture for Phase 8B an
 - Stage 8C implementation is active.
 - Terraform bootstrap, the `dev` network foundation, ECR, and the first EKS module wiring are in place.
 - The current AWS implementation target is cost-controlled validation: default `dev` should stay cheap, while EKS is used only for short-lived labs.
+- Default AWS `dev` has been validated with `terraform validate` and a no-change `terraform plan`.
+- Manual API image build, tag, push, and ECR lookup have been validated.
+- `scripts/push-api-image-to-ecr.ps1` now provides the repeatable local image publishing workflow.
 
 ## Locked Defaults
 
@@ -144,11 +147,23 @@ The current validated AWS implementation evidence is:
 
 - Terraform bootstrap state has been applied and verified.
 - `infra/aws/envs/dev` is wired to the remote backend and consumes reusable modules.
+- `terraform validate` passes for `infra/aws/envs/dev`.
+- `terraform plan` reports no changes for the current cost-controlled `dev` baseline.
 - the `network` module has been applied successfully for `dev`.
 - the `ecr` module has been added and consumed by `dev`.
+- API image publishing to ECR has been validated manually:
+  - local image: `ai-debug-assistant-api:dev`
+  - ECR repository: `ai-debug-assistant-ada-dev-api`
+  - ECR tag: `dev`
+  - image digest: `sha256:e6e9232239051487e3a81e65625dda90a1b2431c08bf79007d3e80d35256ce22`
+- `scripts/push-api-image-to-ecr.ps1` has been added to make the local ECR publishing flow repeatable.
 - the `eks` module has been added and consumed by `dev` behind `enable_eks`.
 - NAT Gateway is now optional and disabled by default in `dev`.
 - EKS is now disabled by default in `dev` and enabled only for short-lived labs.
+- previous EKS and NAT lab resources were cleaned up:
+  - `aws eks list-clusters` returned no clusters in `us-east-1`
+  - the prior NAT Gateway reached `deleted`
+  - no NAT Elastic IP remained for the project NAT tag
 - future billable-service toggles for RDS, ElastiCache, ALB, and Container Insights exist in `dev` and default to disabled.
 - the validated `dev` network includes:
   - VPC `ai-debug-assistant-ada-dev-vpc`
@@ -188,5 +203,5 @@ The following still require explicit tracked decisions before implementation:
 - RDS size and availability posture
 - ElastiCache engine and sizing details
 - CloudWatch detail level
-- final ECR image publishing workflow
+- validation of the local ECR publishing script
 - production-shaped private EKS posture for `staging` and `prod`

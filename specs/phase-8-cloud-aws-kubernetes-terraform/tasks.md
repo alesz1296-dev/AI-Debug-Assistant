@@ -75,8 +75,8 @@
 - [x] Add Terraform EKS module behind `enable_eks`.
 - [x] Add `eks_subnet_tier` control for public versus private EKS lab placement.
 - [x] Add future billable-service toggles for RDS, ElastiCache, ALB, and Container Insights.
-- [ ] Validate default `dev` plan excludes EKS, NAT Gateway, RDS, ElastiCache, ALB, and Container Insights.
-- [ ] If prior EKS or NAT resources exist in state, validate the cleanup plan destroys them.
+- [x] Validate default `dev` plan excludes EKS, NAT Gateway, RDS, ElastiCache, ALB, and Container Insights.
+- [x] If prior EKS or NAT resources exist in state, validate the cleanup plan destroys them.
 - [ ] Confirm free-tier-eligible EC2 instance type before any EKS lab apply.
 - [ ] Validate short-lived EKS lab creation with `enable_eks = true`.
 - [ ] Validate EKS teardown proof after the lab.
@@ -86,7 +86,8 @@
 - [ ] Add Terraform observability module behind `enable_container_insights`.
 - [ ] Add AWS Load Balancer Controller and ALB flow behind `enable_alb`.
 - [x] Validate manual API image build, tag, push, and ECR image lookup.
-- [ ] Add image build and ECR push workflow.
+- [x] Add image build and ECR push workflow.
+- [ ] Validate `scripts/push-api-image-to-ecr.ps1` end to end.
 - [ ] Deploy Helm chart to EKS.
 - [ ] Run Alembic migration Job against RDS.
 - [ ] Validate API and worker on EKS.

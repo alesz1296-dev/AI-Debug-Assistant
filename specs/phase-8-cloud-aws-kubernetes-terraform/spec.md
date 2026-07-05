@@ -23,7 +23,7 @@ Stage 8B (ADA) is also the transition point from agent-led implementation into o
 - Keep AWS `dev` cost-controlled by default, with EKS and other billable services enabled only for focused labs.
 - Use three operating profiles: `local-full`, `aws-free-friendly`, and `aws-eks-lab`.
 - Design Terraform around reusable modules rather than a single flat stack.
-- Use ECR for image publishing before EKS deployment.
+- Use ECR for image publishing before EKS deployment, with a repeatable local publishing helper before CI automation.
 - Use RDS PostgreSQL with pgvector for the AWS database target.
 - Use ElastiCache Redis or Valkey for the AWS queue/cache target.
 - Add Kubernetes/AWS secrets handling without committing secrets.
@@ -42,7 +42,8 @@ Stage 8B (ADA) is also the transition point from agent-led implementation into o
 - Terraform module boundaries are documented so AWS infrastructure can be built and reused cleanly across environments.
 - Stage 8B documents the AWS target architecture, Terraform structure, secrets approach, validation workflow, and teardown workflow clearly enough that Stage 8C can be executed without further architecture decisions.
 - Terraform plans the AWS EKS foundation without manual console setup.
-- AWS deployment workflow is documented and repeatable.
+- AWS image publishing workflow is documented, manually validated, and repeatable from a local script.
+- AWS deployment workflow is documented and repeatable before any long-running AWS app stack is claimed.
 - Secrets are not stored in git.
 - Operational demo proves health, readiness, logs, metrics, migrations, and worker processing after deployment.
 - Teardown and cost-control steps are documented before any AWS apply.

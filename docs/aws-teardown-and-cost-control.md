@@ -94,6 +94,20 @@ The corresponding `dev` toggles must default to `false`:
 - `enable_alb`
 - `enable_container_insights`
 
+## Current Cleanup Evidence
+
+The current `dev` environment has been returned to the cost-controlled baseline:
+
+- `terraform validate` succeeds for `infra/aws/envs/dev`.
+- `terraform plan` reports no changes for the current `dev` baseline.
+- EKS is disabled by default with `enable_eks = false`.
+- NAT Gateway is disabled by default with `enable_nat_gateway = false`.
+- `aws eks list-clusters --region us-east-1` returned no clusters.
+- the prior NAT Gateway for `ai-debug-assistant-ada-dev-nat` reached `deleted`.
+- no NAT Elastic IP remains for `ai-debug-assistant-ada-dev-nat-eip`.
+
+Current retained baseline resources are limited to remote state, the `dev` VPC network foundation, route tables, Internet Gateway, and ECR.
+
 ## Required Future Teardown Checklist
 
 - [ ] confirm final validation evidence is saved

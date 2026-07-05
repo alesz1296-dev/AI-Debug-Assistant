@@ -40,6 +40,24 @@ The target platform persists records and embeddings, uses pgvector retrieval, mo
 
 Phase 8 is currently building that AWS path through a cost-controlled Terraform model. The default `dev` AWS environment keeps only the low-cost baseline enabled, while EKS, NAT Gateway, RDS, ElastiCache, ALB, and richer cloud observability are enabled only for focused labs or later environment tiers.
 
+## Phase 8 AWS Baseline
+
+```mermaid
+flowchart LR
+    Dev["Developer Workstation"] --> Build["Docker Build"]
+    Build --> Tag["ECR Image Tag"]
+    Tag --> Push["ECR Push"]
+    Push --> ECR["Amazon ECR"]
+    TF["Terraform"] --> State["Remote State"]
+    TF --> Net["VPC + Subnets + Routes + Internet Gateway"]
+    TF --> ECR
+    Lab["Short-Lived AWS Labs"] -. opt in .-> EKS["EKS"]
+    Lab -. opt in .-> Data["RDS / ElastiCache"]
+    Lab -. opt in .-> ALB["ALB / Cloud Observability"]
+```
+
+The current AWS `dev` baseline is intentionally conservative: Terraform owns the network foundation and ECR repository, while application images are published with `scripts/push-api-image-to-ecr.ps1`. Expensive resources remain behind explicit toggles and are not part of the default `dev` plan.
+
 ## Phase 5 Observability Overview
 
 ```mermaid
