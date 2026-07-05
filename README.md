@@ -70,25 +70,20 @@ Current Phase 8 progress:
 - manual API image build, tag, push, and ECR lookup have been validated against the `dev` ECR repository
 - `scripts/push-api-image-to-ecr.ps1` now captures the repeatable local ECR publishing flow
 
-## What It Demonstrates
+## Core Capabilities
 
-- FastAPI service design
-- RAG ingestion and retrieval
-- grounded answers with citations
-- synthetic benchmark cases
-- evaluation harnesses
-- production data-safety rules
-- observability and security scaffolding
-- private learning notes excluded from Git
+- FastAPI API for incident triage queries, health checks, readiness checks, and evaluations.
+- Retrieval-augmented answer generation over public and synthetic operational evidence.
+- Grounded responses with citations, confidence, warnings, and suggested next steps.
+- PostgreSQL-backed persistence with pgvector-ready retrieval.
+- Redis/RQ worker boundary for asynchronous ingestion.
+- Evaluation harnesses for retrieval quality, groundedness, citation presence, warning behavior, and latency.
+- Structured logs, request IDs, readiness signals, and Prometheus-style metrics.
+- Docker Compose, local Kubernetes, Helm, and Terraform foundations for progressive platform delivery.
 
-## Documentation Policy
+## Project Documentation
 
-Public SSD docs are tracked in git. Private learning notes, coaching notes, scratch plans, and manual-development logs belong in ignored folders such as `.learning/`, `.planning/`, or `.private-notes/`.
-
-For Stage 8B and later:
-
-- tracked docs should capture project-facing architecture, tasks, validation, and operational runbooks
-- personal study notes, learning checkpoints, and coaching notes should remain private and untracked
+The repository uses Spec-Driven Development artifacts under `specs/` to describe phase goals, implementation plans, and verifiable task lists. Operational runbooks live under `docs/` and cover validation, architecture, data policy, local Kubernetes, AWS cost control, and deployment evidence.
 
 ## Deferred Frameworks
 
