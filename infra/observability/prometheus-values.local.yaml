@@ -1,0 +1,10 @@
+server:
+  global:
+    scrape_interval: 15s
+
+extraScrapeConfigs: |
+  - job_name: "ai-debug-api"
+    metrics_path: /api/v1/metrics
+    static_configs:
+      - targets:
+          - ai-debug-api.ai-debug.svc.cluster.local:8000
